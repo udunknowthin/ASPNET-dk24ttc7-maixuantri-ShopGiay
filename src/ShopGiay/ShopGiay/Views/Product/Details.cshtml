@@ -1,0 +1,195 @@
+﻿@model ShopGiay.Models.Product
+@{
+    ViewBag.Title = Model.Name;
+    var images = Model.Images != null ? Model.Images.ToList() : new List<ShopGiay.Models.ProductImage>();
+    var sizes = Model.Sizes != null ? Model.Sizes.ToList() : new List<ShopGiay.Models.ProductSize>();
+    var firstImage = images.Any() ? images.First().ImageUrl : null;
+    var finalPrice = Model.IsDiscounted ? Model.Price * (decimal)(1 - Model.DiscountPercentage / 100.0) : Model.Price;
+    var relatedProducts = ViewBag.RelatedProducts as List<ShopGiay.Models.Product> ?? new List<ShopGiay.Models.Product>();
+}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="@Url.Action("Index","Home")" class="text-decoration-none">Trang chủ</a></li>
+        @if (Model.Category != null)
+        {
+            <li class="breadcrumb-item text-muted">@Model.Category.Name</li>
+        }
+        <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <!-- Ảnh sản phẩm -->
+    <div class="col-md-6">
+        @if (firstImage != null)
+        {
+            <img id="mainImage"
+                 src="@Url.Content("~/Content/images/products/" + Model.SKU + "/" + firstImage)"
+                 class="product-detail-img mb-3" alt="@Model.Name" />
+        }
+        @if (images.Count > 1)
+        {
+            <div class="d-flex gap-2 flex-wrap">
+                @foreach (var img in images)
+                {
+                    <img src="@Url.Content("~/Content/images/products/" + Model.SKU + "/" + img.ImageUrl)"
+                         class="product-thumbnail @(img == images.First() ? "active" : "")"
+                         onclick="setMainImage(this)"
+                         alt="@Model.Name" />
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Thông tin sản phẩm -->
+    <div class="col-md-6">
+        <span class="badge bg-secondary mb-2">@(Model.Category != null ? Model.Category.Name : "")</span>
+        <h2 class="fw-bold mb-1">@Model.Name</h2>
+        <p class="text-muted small mb-3">Mã sản phẩm: <strong>@Model.SKU</strong></p>
+
+        @if (Model.IsDiscounted)
+        {
+            <div class="mb-3">
+                <span class="price-old fs-5">@Model.Price.ToString("N0") ₫</span>
+                <span class="price-new fs-3 ms-2">@finalPrice.ToString("N0") ₫</span>
+                <span class="badge bg-danger ms-2 fs-6">-@Model.DiscountPercentage%</span>
+            </div>
+        }
+        else
+        {
+            <div class="mb-3">
+                <span class="price-normal fs-3">@Model.Price.ToString("N0") ₫</span>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.Description))
+        {
+            <p class="text-muted mb-3">@Model.Description</p>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.LongDescription))
+        {
+            <p class="mb-3">@Model.LongDescription</p>
+        }
+
+        <hr />
+
+        @using (Html.BeginForm("AddToCart", "Cart", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="productId" value="@Model.Id" />
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">Chọn size</label>
+                @if (sizes.Any())
+                {
+                    <div class="d-flex gap-2 flex-wrap size-btn-group">
+                        @foreach (var size in sizes)
+                        {
+                            var isDisabled = size.StockQuantity <= 0;
+                            var isFirst = sizes.IndexOf(size) == 0;
+                            <div>
+                                <input type="radio" class="btn-check" name="productSizeId"
+                                       id="size_@size.Id" value="@size.Id"
+                                       @(isDisabled ? "disabled" : "")
+                                       @(isFirst && !isDisabled ? "checked" : "") />
+                                <label class="btn @(isDisabled ? "btn-outline-secondary" : "btn-outline-dark") btn-sm"
+                                       for="size_@size.Id"
+                                       title="@(isDisabled ? "Hết hàng" : "Còn " + size.StockQuantity + " đôi")">
+                                    @size.SizeName
+                                    @if (isDisabled) { <small class="d-block" style="font-size:.65rem;">Hết</small> }
+                                </label>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">Hiện chưa có size</p>
+                }
+            </div>
+
+            <div class="mb-4">
+                <label for="quantity" class="form-label fw-bold">Số lượng</label>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" onclick="changeQty(-1)">−</button>
+                    <input type="number" name="quantity" id="quantity" value="1" min="1" max="99"
+                           class="form-control text-center" style="width:72px;" />
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" onclick="changeQty(1)">+</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-dark btn-lg w-100 rounded-pill">
+                🛒 Thêm vào giỏ hàng
+            </button>
+        }
+
+        <div class="mt-3 d-flex gap-2 text-muted small">
+            <span>✅ Hàng chính hãng</span>
+            <span>•</span>
+            <span>🚚 Giao hàng toàn quốc</span>
+            <span>•</span>
+            <span>🔄 Đổi trả 7 ngày</span>
+        </div>
+    </div>
+</div>
+
+<!-- Sản phẩm liên quan -->
+@if (relatedProducts.Any())
+{
+    <hr class="my-5" />
+    <h4 class="section-heading">Sản phẩm liên quan</h4>
+    <div class="row row-cols-2 row-cols-md-4 g-3">
+        @foreach (var rp in relatedProducts)
+        {
+            var rpImage = rp.Images != null && rp.Images.Any() ? rp.Images.First().ImageUrl : null;
+            var rpPrice = rp.IsDiscounted ? rp.Price * (decimal)(1 - rp.DiscountPercentage / 100.0) : rp.Price;
+            <div class="col">
+                <div class="card product-card h-100">
+                    @if (rpImage != null)
+                    {
+                        <a href="@Url.Action("Details", "Product", new { sku = rp.SKU })">
+                            <img src="@Url.Content("~/Content/images/products/" + rp.SKU + "/" + rpImage)"
+                                 class="card-img-top" alt="@rp.Name" style="height:180px;object-fit:cover;" />
+                        </a>
+                    }
+                    <div class="card-body">
+                        <p class="card-title small fw-semibold mb-1">
+                            <a href="@Url.Action("Details", "Product", new { sku = rp.SKU })" class="text-decoration-none text-dark stretched-link">@rp.Name</a>
+                        </p>
+                        @if (rp.IsDiscounted)
+                        {
+                            <div>
+                                <span class="price-old">@rp.Price.ToString("N0") ₫</span>
+                                <span class="price-new ms-1">@rpPrice.ToString("N0") ₫</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <span class="price-normal">@rpPrice.ToString("N0") ₫</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@section scripts {
+<script>
+    function setMainImage(el) {
+        document.getElementById('mainImage').src = el.src;
+        document.querySelectorAll('.product-thumbnail').forEach(function(t){ t.classList.remove('active'); });
+        el.classList.add('active');
+    }
+    function changeQty(delta) {
+        var input = document.getElementById('quantity');
+        var val = parseInt(input.value) + delta;
+        if (val < 1) val = 1;
+        if (val > 99) val = 99;
+        input.value = val;
+    }
+</script>
+}

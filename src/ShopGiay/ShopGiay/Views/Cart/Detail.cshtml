@@ -1,0 +1,164 @@
+﻿@model ShopGiay.Models.Cart
+@{
+    ViewBag.Title = "Giỏ hàng";
+    var cartItems = Model.CartItems != null ? Model.CartItems.ToList() : new List<ShopGiay.Models.CartItem>();
+    decimal total = 0;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h2 class="section-heading mb-0">🛒 Giỏ hàng của bạn</h2>
+    <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary btn-sm rounded-pill">← Tiếp tục mua sắm</a>
+</div>
+
+@if (!cartItems.Any())
+{
+    <div class="text-center py-5">
+        <div style="font-size:4rem;">🛒</div>
+        <h5 class="mt-3 text-muted">Giỏ hàng của bạn đang trống</h5>
+        <a href="@Url.Action("Index", "Home")" class="btn btn-dark rounded-pill mt-3 px-4">Mua sắm ngay</a>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        <!-- Danh sách sản phẩm -->
+        <div class="col-lg-8">
+            <div class="card checkout-card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table cart-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Sản phẩm</th>
+                                    <th>Size</th>
+                                    <th>Đơn giá</th>
+                                    <th style="width:130px;">Số lượng</th>
+                                    <th>Thành tiền</th>
+                                    <th style="width:50px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var ci in cartItems)
+                                {
+                                    var product = ci.Product;
+                                    var size = ci.ProductSize;
+                                    decimal unitPrice = 0;
+                                    string imgUrl = null;
+
+                                    if (product != null)
+                                    {
+                                        unitPrice = product.IsDiscounted
+                                            ? product.Price * (decimal)(1 - product.DiscountPercentage / 100.0)
+                                            : product.Price;
+                                        if (product.Images != null && product.Images.Any())
+                                        {
+                                            imgUrl = product.Images.First().ImageUrl;
+                                        }
+                                    }
+
+                                    var lineTotal = unitPrice * ci.Quantity;
+                                    total += lineTotal;
+
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center gap-3">
+                                                @if (imgUrl != null && product != null)
+                                                {
+                                                    <img src="@Url.Content("~/Content/images/products/" + product.SKU + "/" + imgUrl)"
+                                                         class="cart-product-img" alt="" />
+                                                }
+                                                <div>
+                                                    @if (product != null)
+                                                    {
+                                                        <a href="@Url.Action("Details", "Product", new { sku = product.SKU })"
+                                                           class="text-decoration-none text-dark fw-semibold">@product.Name</a>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td><span class="badge bg-secondary">@(size != null ? size.SizeName : "-")</span></td>
+                                        <td class="fw-medium">@unitPrice.ToString("N0") ₫</td>
+                                        <td>
+                                            <input type="number" class="form-control form-control-sm qty-input text-center"
+                                                   value="@ci.Quantity" min="1"
+                                                   data-product-id="@ci.ProductId"
+                                                   data-size-id="@ci.ProductSizeId"
+                                                   style="width:80px;" />
+                                        </td>
+                                        <td class="fw-bold text-danger">@lineTotal.ToString("N0") ₫</td>
+                                        <td>
+                                            @using (Html.BeginForm("RemoveFromCart", "Cart", FormMethod.Post))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="productId" value="@ci.ProductId" />
+                                                <input type="hidden" name="productSizeId" value="@ci.ProductSizeId" />
+                                                <button type="submit" class="btn btn-link text-danger p-1" title="Xóa">
+                                                    🗑
+                                                </button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tóm tắt đơn hàng -->
+        <div class="col-lg-4">
+            <div class="card checkout-card">
+                <div class="card-header bg-dark text-white">
+                    <h6 class="mb-0">📋 Tóm tắt đơn hàng</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Tạm tính:</span>
+                        <span>@total.ToString("N0") ₫</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Phí vận chuyển:</span>
+                        <span class="text-success fw-semibold">Miễn phí</span>
+                    </div>
+                    <hr />
+                    <div class="d-flex justify-content-between fw-bold fs-5 mb-4">
+                        <span>Tổng cộng:</span>
+                        <span class="text-danger">@total.ToString("N0") ₫</span>
+                    </div>
+                    <a href="@Url.Action("Confirm", "Checkout")" class="btn btn-dark w-100 rounded-pill btn-lg">
+                        Đặt hàng →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            var token = $('input[name="__RequestVerificationToken"]').first().val();
+
+            $('.qty-input').on('change', function () {
+                var qty = parseInt($(this).val());
+                var productId = $(this).data('product-id');
+                var sizeId = $(this).data('size-id');
+
+                $.ajax({
+                    url: '@Url.Action("UpdateQuantity", "Cart")',
+                    type: 'POST',
+                    data: { productId: productId, productSizeId: sizeId, quantity: qty, __RequestVerificationToken: token },
+                    success: function (result) {
+                        if (result.success) {
+                            location.reload();
+                        } else {
+                            alert(result.message);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+}
+

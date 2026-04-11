@@ -1,0 +1,47 @@
+﻿@using ShopGiay.Models
+@model LoginViewModel
+@{
+    ViewBag.Title = "Đăng nhập";
+}
+
+<div class="auth-card">
+    <div class="text-center mb-4">
+        <div style="font-size:2.5rem">👟</div>
+        <h2 class="mt-2">Đăng nhập</h2>
+        <p class="text-muted small">Chào mừng bạn quay trở lại ShopGiay!</p>
+    </div>
+
+    @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { role = "form" }))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "alert alert-danger rounded-3 small" })
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            @Html.TextBoxFor(m => m.Email, new { @class = "form-control", placeholder = "email@example.com" })
+            @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger small" })
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Mật khẩu</label>
+            @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "••••••••" })
+            @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger small" })
+        </div>
+
+        <div class="mb-4 d-flex align-items-center gap-2">
+            @Html.CheckBoxFor(m => m.RememberMe)
+            <label class="mb-0 small">Ghi nhớ đăng nhập</label>
+        </div>
+
+        <button type="submit" class="btn btn-dark w-100 py-2 fw-bold mb-3">Đăng nhập</button>
+
+        <div class="text-center small">
+            Chưa có tài khoản?
+            @Html.ActionLink("Đăng ký ngay", "Register", null, new { @class = "fw-bold text-dark" })
+        </div>
+    }
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

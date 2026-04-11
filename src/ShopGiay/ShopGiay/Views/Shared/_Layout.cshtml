@@ -1,0 +1,68 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - ShopGiay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    @Styles.Render("~/Content/css")
+    @Scripts.Render("~/bundles/modernizr")
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="@Url.Action("Index", "Home")">
+                👟 ShopGiay
+            </a>
+            <button type="button" class="navbar-toggler border-0" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Mở menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        @Html.ActionLink("Trang chủ", "Index", "Home", new { area = "" }, new { @class = "nav-link" })
+                    </li>
+                </ul>
+                <ul class="navbar-nav align-items-center gap-1">
+                    <li class="nav-item">
+                        <a href="@Url.Action("Detail", "Cart")" class="nav-link position-relative">
+                            🛒 Giỏ hàng
+                            @Html.Action("CartBadge", "Cart")
+                        </a>
+                    </li>
+                    @Html.Partial("_LoginPartial")
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>✅</strong> @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>❌</strong> @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @RenderBody()
+
+        <hr class="mt-5" />
+        <footer class="text-center py-3">
+            <p class="mb-0 text-muted">&copy; @DateTime.Now.Year <strong>ShopGiay</strong> — Giày dép chính hãng</p>
+        </footer>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+</body>
+</html>

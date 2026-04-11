@@ -1,0 +1,80 @@
+﻿@model ShopGiay.Models.Order
+@{
+    ViewBag.Title = "Đặt hàng thành công";
+}
+
+<div class="text-center mt-4 mb-5">
+    <div class="success-icon mb-3">🎉</div>
+    <h2 class="fw-bold text-success mb-2">Đặt hàng thành công!</h2>
+    <p class="lead text-muted">Cảm ơn bạn đã tin tưởng mua sắm tại <strong>ShopGiay</strong>.</p>
+
+    <div class="order-success-card card mt-4">
+        <div class="card-header bg-dark text-white py-3">
+            <h5 class="mb-0 fw-bold">📋 Chi tiết đơn hàng <span class="text-warning">#@Model.Id</span></h5>
+        </div>
+        <div class="card-body p-4 text-start">
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <div class="text-muted small">Họ và tên</div>
+                    <div class="fw-semibold">@Model.FullName</div>
+                </div>
+                <div class="col-6">
+                    <div class="text-muted small">Email</div>
+                    <div class="fw-semibold">@Model.Email</div>
+                </div>
+                <div class="col-6">
+                    <div class="text-muted small">Số điện thoại</div>
+                    <div class="fw-semibold">@Model.PhoneNumber</div>
+                </div>
+                <div class="col-6">
+                    <div class="text-muted small">Phương thức thanh toán</div>
+                    <div class="fw-semibold">@(Model.PaymentMethod == "COD" ? "💵 Thanh toán khi nhận hàng" : "🏦 Chuyển khoản")</div>
+                </div>
+                <div class="col-12">
+                    <div class="text-muted small">Địa chỉ giao hàng</div>
+                    <div class="fw-semibold">@Model.Address</div>
+                </div>
+                <div class="col-6">
+                    <div class="text-muted small">Trạng thái</div>
+                    <span class="badge bg-warning text-dark px-3 py-2">⏳ Chờ xác nhận</span>
+                </div>
+            </div>
+
+            <hr />
+            <h6 class="fw-bold mb-3">Sản phẩm đã đặt</h6>
+
+            @if (Model.OrderItems != null)
+            {
+                foreach (var item in Model.OrderItems)
+                {
+                    <div class="d-flex justify-content-between align-items-center mb-2 py-1 border-bottom">
+                        <div>
+                            <span class="fw-semibold" style="font-size:.9rem">@item.ProductName</span>
+                            <br />
+                            <small class="text-muted">
+                                Size: <span class="badge bg-secondary">@item.SizeName</span>
+                                &times; @item.Quantity
+                            </small>
+                        </div>
+                        <span class="fw-semibold text-nowrap ms-3">@string.Format("{0:N0} ₫", item.UnitPrice * item.Quantity)</span>
+                    </div>
+                }
+            }
+
+            <div class="d-flex justify-content-between fw-bold fs-5 mt-3">
+                <span>Tổng cộng</span>
+                <span class="text-danger">@string.Format("{0:N0} ₫", Model.TotalAmount)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex justify-content-center gap-3">
+        <a href="@Url.Action("Index", "Home")" class="btn btn-dark btn-lg px-4">
+            🏠 Tiếp tục mua sắm
+        </a>
+    </div>
+
+    <p class="text-muted small mt-4">
+        Đơn hàng sẽ được giao trong <strong>2–5 ngày làm việc</strong>. Chúng tôi sẽ liên hệ xác nhận qua điện thoại.
+    </p>
+</div>

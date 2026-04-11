@@ -1,0 +1,134 @@
+﻿@model ShopGiay.Models.HomePageViewModel
+@{
+    ViewBag.Title = "Trang chủ";
+}
+
+<!-- ===================== CAROUSEL ===================== -->
+<div id="heroCarousel" class="carousel slide home-carousel mb-5" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+    </div>
+    <div class="carousel-inner rounded-4 overflow-hidden shadow">
+        <div class="carousel-item active carousel-slide-1">
+            <div class="d-flex align-items-center justify-content-center h-100 text-white text-center px-4" style="height:420px;">
+                <div>
+                    <span class="badge bg-warning text-dark mb-3 px-3 py-2 rounded-pill fw-semibold">Bộ sưu tập mới</span>
+                    <h2 class="display-5 fw-bold mb-3">Giày Nam Cao Cấp</h2>
+                    <p class="lead mb-4">Phong cách lịch lãm — Thoải mái mỗi bước đi</p>
+                    <a href="#newProducts" class="btn btn-light btn-lg px-4 rounded-pill fw-semibold">Khám phá ngay</a>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item carousel-slide-2">
+            <div class="d-flex align-items-center justify-content-center h-100 text-white text-center px-4" style="height:420px;">
+                <div>
+                    <span class="badge bg-danger mb-3 px-3 py-2 rounded-pill fw-semibold">Giảm đến 25%</span>
+                    <h2 class="display-5 fw-bold mb-3">Giày Nữ Thời Thượng</h2>
+                    <p class="lead mb-4">Thanh lịch — Tinh tế — Đẳng cấp</p>
+                    <a href="#newProducts" class="btn btn-light btn-lg px-4 rounded-pill fw-semibold">Xem ưu đãi</a>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item carousel-slide-3">
+            <div class="d-flex align-items-center justify-content-center h-100 text-white text-center px-4" style="height:420px;">
+                <div>
+                    <span class="badge bg-success mb-3 px-3 py-2 rounded-pill fw-semibold">Hàng mới về</span>
+                    <h2 class="display-5 fw-bold mb-3">Giày Thể Thao</h2>
+                    <p class="lead mb-4">Nâng cao hiệu suất — Dẫn đầu phong trào</p>
+                    <a href="#newProducts" class="btn btn-light btn-lg px-4 rounded-pill fw-semibold">Mua ngay</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+    </button>
+</div>
+
+<!-- ===================== DANH MỤC ===================== -->
+@if (Model.Categories != null && Model.Categories.Count > 0)
+{
+    <h2 class="section-heading">Danh mục sản phẩm</h2>
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3 mb-5">
+        @foreach (var cat in Model.Categories)
+        {
+            <div class="col">
+                <div class="card category-card h-100 text-center">
+                    @if (!string.IsNullOrEmpty(cat.ImageUrl))
+                    {
+                        <img src="@Url.Content("~/Content/images/categories/" + cat.ImageUrl)"
+                             class="card-img-top" alt="@cat.Name"
+                             style="height:140px;object-fit:cover;" />
+                    }
+                    <div class="card-body py-2">
+                        <h6 class="card-title mb-0">@cat.Name</h6>
+                        <small class="text-muted">@(cat.Products != null ? cat.Products.Count : 0) sản phẩm</small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- ===================== SẢN PHẨM MỚI ===================== -->
+@if (Model.NewProducts != null && Model.NewProducts.Count > 0)
+{
+    <div id="newProducts">
+        <h2 class="section-heading">Sản phẩm mới nhất</h2>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @foreach (var p in Model.NewProducts)
+            {
+                var firstImage = p.Images != null && p.Images.Any() ? p.Images.First().ImageUrl : null;
+                var finalPrice = p.IsDiscounted ? p.Price * (decimal)(1 - p.DiscountPercentage / 100.0) : p.Price;
+                <div class="col">
+                    <div class="card product-card h-100">
+                        <div style="overflow:hidden;border-radius:12px 12px 0 0;position:relative;">
+                            @if (p.IsDiscounted)
+                            {
+                                <span class="badge bg-danger position-absolute top-0 start-0 m-2 px-2 py-1" style="z-index:1;border-radius:6px;">-@p.DiscountPercentage%</span>
+                            }
+                            @if (firstImage != null)
+                            {
+                                <a href="@Url.Action("Details", "Product", new { sku = p.SKU })">
+                                    <img src="@Url.Content("~/Content/images/products/" + p.SKU + "/" + firstImage)"
+                                         class="card-img-top" alt="@p.Name"
+                                         style="height:220px;object-fit:cover;" />
+                                </a>
+                            }
+                            else
+                            {
+                                <div style="height:220px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;">
+                                    <span class="text-muted">Không có ảnh</span>
+                                </div>
+                            }
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <p class="small text-muted mb-1">@(p.Category != null ? p.Category.Name : "")</p>
+                            <h6 class="card-title">
+                                <a href="@Url.Action("Details", "Product", new { sku = p.SKU })" class="text-decoration-none text-dark stretched-link">@p.Name</a>
+                            </h6>
+                            <div class="mt-auto pt-2">
+                                @if (p.IsDiscounted)
+                                {
+                                    <div>
+                                        <span class="price-old">@p.Price.ToString("N0") ₫</span>
+                                        <span class="price-new ms-1">@finalPrice.ToString("N0") ₫</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="price-normal">@p.Price.ToString("N0") ₫</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
