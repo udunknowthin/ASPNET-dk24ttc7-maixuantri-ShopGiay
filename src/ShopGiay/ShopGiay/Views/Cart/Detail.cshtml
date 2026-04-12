@@ -77,7 +77,20 @@ else
                                             </div>
                                         </td>
                                         <td><span class="badge bg-secondary">@(size != null ? size.SizeName : "-")</span></td>
-                                        <td class="fw-medium">@unitPrice.ToString("N0") ₫</td>
+                                        <td>
+                                            @if (product != null && product.IsDiscounted)
+                                            {
+                                                <div>
+                                                    <span class="price-old">@product.Price.ToString("N0") ₫</span>
+                                                    <span class="ms-2 fw-medium">@unitPrice.ToString("N0") ₫</span>
+                                                    <span class="badge bg-danger ms-2">-@product.DiscountPercentage% </span>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="fw-medium">@unitPrice.ToString("N0") ₫</div>
+                                            }
+                                        </td>
                                         <td>
                                             <input type="number" class="form-control form-control-sm qty-input text-center"
                                                    value="@ci.Quantity" min="1"
@@ -161,4 +174,53 @@ else
         });
     </script>
 }
+
+@* Realtime price validation: hidden antiforgery token + polling *@
+@using (Html.BeginForm()) { @Html.AntiForgeryToken() }
+<script>
+    (function(){
+        var tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        var token = tokenInput ? tokenInput.value : null;
+        var checkInterval = 15000; // ms
+        var alertBox;
+
+        function showPriceAlert(msg){
+            if(alertBox) return;
+            alertBox = document.createElement('div');
+            alertBox.className = 'alert alert-danger';
+            alertBox.innerHTML = '<strong>⚠️ Lưu ý:</strong> '+ (msg || 'Giá của một số sản phẩm đã thay đổi. Vui lòng kiểm tra giỏ hàng.') +
+                ' <button class="btn btn-sm btn-outline-light ms-3" id="goCartBtn">Kiểm tra giỏ hàng</button>';
+            var container = document.querySelector('.container');
+            if(container) container.insertBefore(alertBox, container.firstChild);
+            var btn = document.getElementById('goCartBtn');
+            if(btn) btn.addEventListener('click', function(){ window.location = '@Url.Action("Detail","Cart")'; });
+            // disable checkout link/button
+            var checkoutBtn = document.querySelector('a.btn[href$="/Checkout/Confirm"]');
+            if(!checkoutBtn) checkoutBtn = document.querySelector('a[href*="Checkout"]');
+            if(checkoutBtn) checkoutBtn.classList.add('disabled');
+        }
+
+        function checkPrices(){
+            if(!token) return;
+            fetch('@Url.Action("ValidateCartPrices","Checkout")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
+                body: JSON.stringify({})
+            }).then(function(r){ return r.json(); }).then(function(data){
+                if(!data.success){
+                    showPriceAlert(data.message);
+                }
+            }).catch(function(){ /* ignore network errors */ });
+        }
+
+        document.addEventListener('DOMContentLoaded', function(){
+            // initial check
+            checkPrices();
+            setInterval(checkPrices, checkInterval);
+        });
+    })();
+</script>
 

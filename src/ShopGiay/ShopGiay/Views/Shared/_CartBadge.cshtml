@@ -1,5 +1,8 @@
-﻿@model int
-@if (Model > 0)
+﻿@model int?
+@{
+    var count = Model ?? 0;
+}
+@if (count > 0)
 {
-    <span class="badge bg-danger rounded-pill ms-1" style="font-size:.7rem;">@Model</span>
+    <span class="badge bg-danger rounded-pill ms-1" style="font-size:.7rem;">@count</span>
 }

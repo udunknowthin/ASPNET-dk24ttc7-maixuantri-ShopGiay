@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ShopGiay.Models
 {
@@ -9,6 +10,9 @@ namespace ShopGiay.Models
         public int ProductId { get; set; }
         public int ProductSizeId { get; set; }
         public int Quantity { get; set; }
+        [Column(TypeName = "decimal")]
+        public decimal UnitPriceAtAdd { get; set; }
+        public double? DiscountPercentageAtAdd { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 

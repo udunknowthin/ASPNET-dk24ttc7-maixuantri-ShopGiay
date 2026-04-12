@@ -1,0 +1,45 @@
+@model ShopGiay.Models.Order
+@{
+    ViewBag.Title = "Chi tiết đơn hàng";
+}
+
+<h2>@ViewBag.Title — #@Model.Id</h2>
+<p>Ngày: @Model.CreatedAt.ToString("g")</p>
+<p>Tổng: @string.Format("{0:N0} ₫", Model.TotalAmount)</p>
+<p>Trạng thái: @Model.Status</p>
+<hr />
+<h5>Sản phẩm</h5>
+@if (Model.OrderItems != null)
+{
+    <div class="row">
+        @foreach (var it in Model.OrderItems)
+        {
+            var product = it.Product; // may be null if product removed
+            <div class="col-12 d-flex align-items-center mb-3">
+                <div style="width:80px;height:80px;overflow:hidden;border-radius:8px;margin-right:12px;">
+                    @if (product != null && product.Images != null && product.Images.Any())
+                    {
+                        <img src="@Url.Content("~/Content/images/products/" + product.SKU + "/" + product.Images.First().ImageUrl)" style="width:100%;height:100%;object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <div style="width:100%;height:100%;background:#f0f0f0;display:flex;align-items:center;justify-content:center;">No image</div>
+                    }
+                </div>
+                <div>
+                    <div>
+                        @if (it.ProductId > 0)
+                        {
+                            <a href="@Url.Action("Details", "Product", new { sku = product != null ? product.SKU : "" })" class="fw-semibold text-dark">@it.ProductName</a>
+                        }
+                        else
+                        {
+                            <span class="fw-semibold">@it.ProductName</span>
+                        }
+                    </div>
+                    <div class="small text-muted">Size: @it.SizeName &times; @it.Quantity — Giá: @string.Format("{0:N0} ₫", it.UnitPrice)</div>
+                </div>
+            </div>
+        }
+    </div>
+}

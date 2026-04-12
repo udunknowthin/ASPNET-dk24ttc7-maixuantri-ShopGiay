@@ -19,6 +19,9 @@ namespace ShopGiay.Models
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
 
+        // store snapshot of image url to display later
+        public string ProductImageUrl { get; set; }
+
         public virtual Order Order { get; set; }
         public virtual Product Product { get; set; }
     }

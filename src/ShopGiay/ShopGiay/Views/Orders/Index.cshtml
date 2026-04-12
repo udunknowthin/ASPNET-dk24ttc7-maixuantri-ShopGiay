@@ -1,0 +1,26 @@
+@model IEnumerable<ShopGiay.Models.Order>
+@{
+    ViewBag.Title = "Đơn hàng của tôi";
+}
+
+<h2>@ViewBag.Title</h2>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">Bạn chưa có đơn hàng nào.</p>
+}
+else
+{
+    <div class="list-group">
+        @foreach (var o in Model)
+        {
+            <a class="list-group-item list-group-item-action" href="@Url.Action("Details", "Orders", new { id = o.Id })">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">#@o.Id</h5>
+                    <small>@o.CreatedAt.ToString("g")</small>
+                </div>
+                <p class="mb-1">Tổng: @string.Format("{0:N0} ₫", o.TotalAmount) — Trạng thái: @o.Status</p>
+            </a>
+        }
+    </div>
+}

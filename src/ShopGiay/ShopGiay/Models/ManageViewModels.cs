@@ -12,6 +12,12 @@ namespace ShopGiay.Models
         public string PhoneNumber { get; set; }
         public bool TwoFactor { get; set; }
         public bool BrowserRemembered { get; set; }
+        // Profile
+        public string FullName { get; set; }
+        public string Address { get; set; }
+        public string Email { get; set; }
+        // Orders placed by the user
+        public IList<ShopGiay.Models.Order> Orders { get; set; }
     }
 
     public class ManageLoginsViewModel
@@ -82,5 +88,12 @@ namespace ShopGiay.Models
     {
         public string SelectedProvider { get; set; }
         public ICollection<System.Web.Mvc.SelectListItem> Providers { get; set; }
+    }
+
+    public class UpdateProfileViewModel
+    {
+        public string FullName { get; set; }
+        public string Address { get; set; }
+        public string PhoneNumber { get; set; }
     }
 }

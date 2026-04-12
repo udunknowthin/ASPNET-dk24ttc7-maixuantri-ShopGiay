@@ -1,34 +1,49 @@
 ﻿@model ShopGiay.Models.IndexViewModel
 @{
-    ViewBag.Title = "Manage";
+    ViewBag.Title = "Quản lý tài khoản";
 }
 
 <main aria-labelledby="title">
-    <h2 id="title">@ViewBag.Title.</h2>
+    <h2 id="title">@ViewBag.Title</h2>
 
     <p class="text-success">@ViewBag.StatusMessage</p>
     <div>
-        <h4>Change your account settings</h4>
+        <h4>Thông tin tài khoản</h4>
         <hr />
-        <dl class="dl-horizontal">
-            <dt>Password:</dt>
-            <dd>
-                [
-                @if (Model.HasPassword)
-                {
-                    @Html.ActionLink("Change your password", "ChangePassword")
-                }
-                else
-                {
-                    @Html.ActionLink("Create", "SetPassword")
-                }
-                ]
-            </dd>
-            <dt>External Logins:</dt>
-            <dd>
-                @Model.Logins.Count [
-                @Html.ActionLink("Manage", "ManageLogins") ]
-            </dd>
+        <div class="row">
+            <div class="col-md-6">
+                <form method="post" action="@Url.Action("UpdateProfile", "Manage")">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">Họ và tên</label>
+                        <input name="FullName" class="form-control" value="@Model.FullName" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Địa chỉ</label>
+                        <input name="Address" class="form-control" value="@Model.Address" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <input name="PhoneNumber" class="form-control" value="@Model.PhoneNumber" />
+                    </div>
+                    <button class="btn btn-dark">Cập nhật thông tin</button>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <h5>Liên kết & mật khẩu</h5>
+                <p>
+                    @if (Model.HasPassword)
+                    {
+                        @Html.ActionLink("Đổi mật khẩu", "ChangePassword", null, new { @class = "btn btn-link" })
+                    }
+                    else
+                    {
+                        @Html.ActionLink("Tạo mật khẩu", "SetPassword", null, new { @class = "btn btn-link" })
+                    }
+                </p>
+                <p>@Model.Logins.Count liên kết [@Html.ActionLink("Quản lý", "ManageLogins") ]</p>
+            </div>
+        </div>
             @*
                 Phone Numbers can used as a second factor of verification in a two-factor authentication system.
                 
@@ -57,33 +72,29 @@
                     }
                 </dd>
             *@
-            <dt>Two-Factor Authentication:</dt>
-            <dd>
-                <p>
-                    There are no two-factor authentication providers configured. See <a href="https://go.microsoft.com/fwlink/?LinkId=403804">this article</a>
-                    for details on setting up this ASP.NET application to support two-factor authentication.
-                </p>
-                @*@if (Model.TwoFactor)
-                    {
-                        using (Html.BeginForm("DisableTwoFactorAuthentication", "Manage", FormMethod.Post, new { role = "form" }))
-                        {
-                            @Html.AntiForgeryToken()
-                            <text>Enabled
-                            <input type="submit" value="Disable" class="btn btn-link" />
-                            </text>
-                        }
-                    }
-                    else
-                    {
-                        using (Html.BeginForm("EnableTwoFactorAuthentication", "Manage", FormMethod.Post, new { role = "form" }))
-                        {
-                            @Html.AntiForgeryToken()
-                            <text>Disabled
-                            <input type="submit" value="Enable" class="btn btn-link" />
-                            </text>
-                        }
-                    }*@
-            </dd>
+            <!-- Two-factor authentication removed from UI per request -->
         </dl>
     </div>
+
+    <hr />
+    <h4>Đơn hàng của bạn</h4>
+    @if (Model.Orders != null && Model.Orders.Any())
+    {
+        <div class="list-group">
+            @foreach (var o in Model.Orders)
+            {
+                <a class="list-group-item list-group-item-action" href="@Url.Action("Details", "Orders", new { id = o.Id })">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">#@o.Id</h5>
+                        <small>@o.CreatedAt.ToString("g")</small>
+                    </div>
+                    <p class="mb-1">Tổng: @string.Format("{0:N0} ₫", o.TotalAmount) — Trạng thái: @o.Status</p>
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">Bạn chưa có đơn hàng nào.</p>
+    }
 </main>

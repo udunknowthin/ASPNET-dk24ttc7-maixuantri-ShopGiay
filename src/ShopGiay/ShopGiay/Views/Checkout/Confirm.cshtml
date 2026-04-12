@@ -103,7 +103,18 @@ else
                                     &times; @ci.Quantity
                                 </small>
                             </div>
-                            <span class="fw-semibold text-nowrap ms-2">@string.Format("{0:N0} ₫", lineTotal)</span>
+                            <span class="fw-semibold text-nowrap ms-2">
+                                @if (product != null && product.IsDiscounted)
+                                {
+                                    <span class="price-old">@product.Price.ToString("N0") ₫</span>
+                                    <span class="price-new ms-1">@(lineTotal.ToString("N0") + " ₫")</span>
+                                    <span class="badge bg-danger ms-2">-@product.DiscountPercentage%</span>
+                                }
+                                else
+                                {
+                                    @(lineTotal.ToString("N0") + " ₫")
+                                }
+                            </span>
                         </div>
                     }
                     <hr />
@@ -113,7 +124,7 @@ else
                     </div>
                     <div class="d-flex justify-content-between fw-bold fs-5 mt-2">
                         <span>Tổng cộng</span>
-                        <span class="text-danger">@string.Format("{0:N0} ₫", Model.Subtotal)</span>
+                        <span class="text-danger">@(Model.Subtotal.ToString("N0") + " ₫")</span>
                     </div>
                 </div>
             </div>

@@ -79,6 +79,14 @@ namespace ShopGiay.Controllers
             switch (result)
             {
                 case SignInStatus.Success:
+                    // Merge any guest session cart into the user's cart
+                    var loggedUser = await UserManager.FindByNameAsync(model.Email);
+                    if (loggedUser != null)
+                    {
+                        // Call CartController helper
+                        var cartCtrl = new CartController();
+                        cartCtrl.MergeSessionCartToUserCart(loggedUser.Id);
+                    }
                     return RedirectToLocal(returnUrl);
                 case SignInStatus.LockedOut:
                     return View("Lockout");
@@ -156,7 +164,9 @@ namespace ShopGiay.Controllers
                 if (result.Succeeded)
                 {
                     await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+                    // Merge guest session cart into newly registered user's cart
+                    var cartCtrl = new CartController();
+                    cartCtrl.MergeSessionCartToUserCart(user.Id);
                     // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);

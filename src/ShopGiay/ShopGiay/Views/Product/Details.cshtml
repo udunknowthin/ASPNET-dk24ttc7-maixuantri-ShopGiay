@@ -83,6 +83,7 @@
 
             <div class="mb-4">
                 <label class="form-label fw-bold">Chọn size</label>
+                <div id="sizeStock" class="small text-muted mb-2">&nbsp;</div>
                 @if (sizes.Any())
                 {
                     <div class="d-flex gap-2 flex-wrap size-btn-group">
@@ -93,13 +94,14 @@
                             <div>
                                 <input type="radio" class="btn-check" name="productSizeId"
                                        id="size_@size.Id" value="@size.Id"
+                                       data-stock="@size.StockQuantity"
                                        @(isDisabled ? "disabled" : "")
                                        @(isFirst && !isDisabled ? "checked" : "") />
                                 <label class="btn @(isDisabled ? "btn-outline-secondary" : "btn-outline-dark") btn-sm"
                                        for="size_@size.Id"
-                                       title="@(isDisabled ? "Hết hàng" : "Còn " + size.StockQuantity + " đôi")">
+                                       title="@(isDisabled ? "Hết hàng" : "Còn " + size.StockQuantity + " sản phẩm")">
                                     @size.SizeName
-                                    @if (isDisabled) { <small class="d-block" style="font-size:.65rem;">Hết</small> }
+                            <small class="d-block" style="font-size:.75rem;">@(isDisabled ? "Hết" : "")</small>
                                 </label>
                             </div>
                         }
@@ -191,5 +193,21 @@
         if (val > 99) val = 99;
         input.value = val;
     }
+    // update stock display when size selected
+    document.addEventListener('DOMContentLoaded', function(){
+        function updateStockDisplay() {
+            var checked = document.querySelector('input[name="productSizeId"]:checked');
+            var el = document.getElementById('sizeStock');
+            if (!checked) { el.innerText = '' ; return; }
+            var stock = parseInt(checked.getAttribute('data-stock') || '0');
+            el.innerText = (stock > 0) ? ('Còn ' + stock + ' sản phẩm') : 'Hết hàng';
+        }
+        // initial
+        updateStockDisplay();
+        // attach change handlers
+        document.querySelectorAll('input[name="productSizeId"]').forEach(function(r){
+            r.addEventListener('change', updateStockDisplay);
+        });
+    });
 </script>
 }

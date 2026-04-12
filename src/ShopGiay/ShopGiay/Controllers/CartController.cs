@@ -62,11 +62,17 @@ namespace ShopGiay.Controllers
                 }
                 else
                 {
+                    // capture price snapshot
+                    var unitPrice = product.IsDiscounted
+                        ? product.Price * (decimal)(1 - product.DiscountPercentage / 100.0)
+                        : product.Price;
                     sessionItems.Add(new SessionCartItem
                     {
                         ProductId = productId,
                         ProductSizeId = productSizeId,
-                        Quantity = quantity
+                        Quantity = quantity,
+                        UnitPriceAtAdd = unitPrice,
+                        DiscountPercentageAtAdd = product.IsDiscounted ? (double?)product.DiscountPercentage : null
                     });
                 }
 
@@ -123,6 +129,12 @@ namespace ShopGiay.Controllers
                     Quantity = quantity,
                     CreatedAt = DateTime.Now
                 };
+                // capture price snapshot
+                var unitPrice = product.IsDiscounted
+                    ? product.Price * (decimal)(1 - product.DiscountPercentage / 100.0)
+                    : product.Price;
+                cartItem.UnitPriceAtAdd = unitPrice;
+                cartItem.DiscountPercentageAtAdd = product.IsDiscounted ? (double?)product.DiscountPercentage : null;
                 db.CartItems.Add(cartItem);
             }
 
@@ -271,7 +283,8 @@ namespace ShopGiay.Controllers
 
         private List<SessionCartItem> GetSessionCartItems()
         {
-            var json = Session[SessionCartKey] as string;
+            var session = System.Web.HttpContext.Current?.Session;
+            var json = session != null ? session[SessionCartKey] as string : null;
             if (string.IsNullOrEmpty(json))
                 return new List<SessionCartItem>();
             return JsonConvert.DeserializeObject<List<SessionCartItem>>(json) ?? new List<SessionCartItem>();
@@ -279,7 +292,11 @@ namespace ShopGiay.Controllers
 
         private void SaveSessionCartItems(List<SessionCartItem> items)
         {
-            Session[SessionCartKey] = JsonConvert.SerializeObject(items);
+            var session = System.Web.HttpContext.Current?.Session;
+            if (session != null)
+            {
+                session[SessionCartKey] = JsonConvert.SerializeObject(items);
+            }
         }
 
         private List<CartItem> BuildSessionCartItems(List<SessionCartItem> sessionItems)
@@ -297,7 +314,9 @@ namespace ShopGiay.Controllers
                         ProductSizeId = si.ProductSizeId,
                         Quantity = si.Quantity,
                         Product = product,
-                        ProductSize = size
+                        ProductSize = size,
+                        UnitPriceAtAdd = si.UnitPriceAtAdd,
+                        DiscountPercentageAtAdd = si.DiscountPercentageAtAdd
                     });
                 }
             }
@@ -314,6 +333,53 @@ namespace ShopGiay.Controllers
             }
             base.Dispose(disposing);
         }
+
+        // Merge session cart items into the logged-in user's cart (overwrite existing DB cart)
+        public void MergeSessionCartToUserCart(string userId)
+        {
+            if (string.IsNullOrEmpty(userId)) return;
+
+            var sessionItems = GetSessionCartItems();
+            if (sessionItems == null || !sessionItems.Any()) return;
+
+            var cart = db.Carts.Include(c => c.CartItems).FirstOrDefault(c => c.UserId == userId);
+            if (cart == null)
+            {
+                cart = new Cart { UserId = userId, CreatedAt = DateTime.Now };
+                db.Carts.Add(cart);
+                db.SaveChanges();
+            }
+
+            // Remove existing cart items and replace with session items
+            var existingItems = db.CartItems.Where(ci => ci.CartId == cart.Id).ToList();
+            foreach (var ei in existingItems)
+            {
+                db.CartItems.Remove(ei);
+            }
+            db.SaveChanges();
+
+            foreach (var si in sessionItems)
+            {
+                // Validate product/size exist
+                var product = db.Products.Find(si.ProductId);
+                var size = db.ProductSizes.Find(si.ProductSizeId);
+                if (product == null || size == null) continue;
+
+                db.CartItems.Add(new CartItem
+                {
+                    CartId = cart.Id,
+                    ProductId = si.ProductId,
+                    ProductSizeId = si.ProductSizeId,
+                    Quantity = si.Quantity,
+                    CreatedAt = DateTime.Now
+                });
+            }
+
+            db.SaveChanges();
+
+            // Clear session cart
+            SaveSessionCartItems(new List<SessionCartItem>());
+        }
     }
 
     public class SessionCartItem
@@ -321,5 +387,7 @@ namespace ShopGiay.Controllers
         public int ProductId { get; set; }
         public int ProductSizeId { get; set; }
         public int Quantity { get; set; }
+        public decimal UnitPriceAtAdd { get; set; }
+        public double? DiscountPercentageAtAdd { get; set; }
     }
 }

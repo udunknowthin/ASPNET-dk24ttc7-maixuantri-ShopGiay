@@ -31,6 +31,24 @@ namespace ShopGiay.Controllers
                 ? cart.CartItems.ToList()
                 : new List<CartItem>();
 
+            // If price changed since added to cart, refresh cart snapshots and force user back to cart page
+            var changedItems = new List<CartItem>();
+            foreach (var ci in cartItems)
+            {
+                string message;
+                if (HasPriceChanged(ci, out message))
+                {
+                    changedItems.Add(ci);
+                }
+            }
+            if (changedItems.Any())
+            {
+                // update snapshots in DB so user can retry after seeing the notice
+                RefreshCartSnapshots(changedItems);
+                TempData["Error"] = "Giá hoặc khuyến mãi một số sản phẩm đã thay đổi. Giỏ hàng đã được cập nhật theo giá hiện tại. Vui lòng kiểm tra lại và đặt hàng.";
+                return RedirectToAction("Detail", "Cart");
+            }
+
             var subtotal = cartItems.Sum(ci =>
             {
                 var price = ci.Product != null && ci.Product.IsDiscounted
@@ -75,6 +93,39 @@ namespace ShopGiay.Controllers
                 return RedirectToAction("Confirm");
             }
 
+            // Re-check current DB pricing before placing order; if changed update snapshots and return user to cart
+            var changedBeforePlace = new List<CartItem>();
+            foreach (var ci in cartItems)
+            {
+                string message;
+                if (HasPriceChanged(ci, out message))
+                {
+                    changedBeforePlace.Add(ci);
+                }
+            }
+            if (changedBeforePlace.Any())
+            {
+                RefreshCartSnapshots(changedBeforePlace);
+                TempData["Error"] = "Giá hoặc khuyến mãi một số sản phẩm đã thay đổi. Giỏ hàng đã được cập nhật theo giá hiện tại. Vui lòng kiểm tra lại và đặt hàng.";
+                return RedirectToAction("Detail", "Cart");
+            }
+
+            // Validate stock availability before placing order
+            foreach (var ci in cartItems)
+            {
+                var size = ci.ProductSize != null ? db.ProductSizes.Find(ci.ProductSize.Id) : db.ProductSizes.Find(ci.ProductSizeId);
+                if (size == null)
+                {
+                    TempData["Error"] = "Không tìm thấy size cho sản phẩm trong giỏ hàng.";
+                    return RedirectToAction("Confirm");
+                }
+                if (size.StockQuantity < ci.Quantity)
+                {
+                    TempData["Error"] = string.Format("Sản phẩm '{0}' chỉ còn {1} trong kho.", ci.Product != null ? ci.Product.Name : "", size.StockQuantity);
+                    return RedirectToAction("Confirm");
+                }
+            }
+
             // Update user info
             user.FullName = model.FullName;
             user.PhoneNumber = model.PhoneNumber;
@@ -114,12 +165,23 @@ namespace ShopGiay.Controllers
                         SizeName = ci.ProductSize != null ? ci.ProductSize.SizeName : string.Empty,
                         UnitPrice = price,
                         Quantity = ci.Quantity,
+                        ProductImageUrl = ci.Product != null && ci.Product.Images != null && ci.Product.Images.Any() ? ci.Product.Images.First().ImageUrl : null,
                         CreatedAt = DateTime.Now
                     };
                 }).ToList()
             };
 
             db.Orders.Add(order);
+
+            // Deduct stock for each cart item
+            foreach (var ci in cartItems)
+            {
+                var ps = db.ProductSizes.Find(ci.ProductSizeId);
+                if (ps != null)
+                {
+                    ps.StockQuantity = Math.Max(0, ps.StockQuantity - ci.Quantity);
+                }
+            }
 
             // Clear cart
             if (cart != null && cart.CartItems != null)
@@ -153,6 +215,53 @@ namespace ShopGiay.Controllers
                 db.Dispose();
             }
             base.Dispose(disposing);
+        }
+
+        private bool HasPriceChanged(CartItem cartItem, out string message)
+        {
+            message = null;
+            var product = db.Products.Find(cartItem.ProductId);
+            if (product == null)
+            {
+                message = "Sản phẩm trong giỏ hàng không còn tồn tại.";
+                return true;
+            }
+
+            var currentUnitPrice = product.IsDiscounted
+                ? product.Price * (decimal)(1 - product.DiscountPercentage / 100.0)
+                : product.Price;
+            var currentDiscount = product.IsDiscounted ? (double?)product.DiscountPercentage : null;
+
+            if (cartItem.UnitPriceAtAdd != currentUnitPrice || cartItem.DiscountPercentageAtAdd != currentDiscount)
+            {
+                message = string.Format("Đặt hàng thất bại: giá hoặc khuyến mãi của sản phẩm '{0}' đã thay đổi. Vui lòng kiểm tra lại giỏ hàng.", product.Name);
+                return true;
+            }
+
+            return false;
+        }
+
+        // Update the cart items' snapshot prices to current DB values for the given items
+        private void RefreshCartSnapshots(IEnumerable<CartItem> items)
+        {
+            foreach (var ci in items)
+            {
+                var product = db.Products.Find(ci.ProductId);
+                if (product == null) continue;
+                var currentUnitPrice = product.IsDiscounted
+                    ? product.Price * (decimal)(1 - product.DiscountPercentage / 100.0)
+                    : product.Price;
+                var currentDiscount = product.IsDiscounted ? (double?)product.DiscountPercentage : null;
+
+                // update DB cart item if exists
+                var dbItem = db.CartItems.Find(ci.Id);
+                if (dbItem != null)
+                {
+                    dbItem.UnitPriceAtAdd = currentUnitPrice;
+                    dbItem.DiscountPercentageAtAdd = currentDiscount;
+                }
+            }
+            db.SaveChanges();
         }
     }
 }

@@ -173,6 +173,7 @@
     <Compile Include="Controllers\CheckoutController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ManageController.cs" />
+    <Compile Include="Controllers\OrdersController.cs" />
     <Compile Include="Controllers\ProductController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -180,6 +181,10 @@
     <Compile Include="Migrations\202604110723464_InitShopGiay.cs" />
     <Compile Include="Migrations\202604110723464_InitShopGiay.Designer.cs">
       <DependentUpon>202604110723464_InitShopGiay.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202604110849217_AddCartItem.cs" />
+    <Compile Include="Migrations\202604110849217_AddCartItem.Designer.cs">
+      <DependentUpon>202604110849217_AddCartItem.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
@@ -194,6 +199,7 @@
     <Compile Include="Models\OrderItem.cs" />
     <Compile Include="Models\Product.cs" />
     <Compile Include="Models\ProductImage.cs" />
+    <Compile Include="Models\ProductListViewModel.cs" />
     <Compile Include="Models\ProductSize.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
@@ -274,6 +280,9 @@
     <Content Include="Views\Checkout\Confirm.cshtml" />
     <Content Include="Views\Checkout\Success.cshtml" />
     <Content Include="Views\Shared\_CartBadge.cshtml" />
+    <Content Include="Views\Orders\Index.cshtml" />
+    <Content Include="Views\Orders\Details.cshtml" />
+    <Content Include="Views\Product\List.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -308,6 +317,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\202604110723464_InitShopGiay.resx">
       <DependentUpon>202604110723464_InitShopGiay.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202604110849217_AddCartItem.resx">
+      <DependentUpon>202604110849217_AddCartItem.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

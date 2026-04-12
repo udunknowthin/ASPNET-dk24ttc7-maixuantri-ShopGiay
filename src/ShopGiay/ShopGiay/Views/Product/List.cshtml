@@ -1,0 +1,132 @@
+@model ShopGiay.Models.ProductListViewModel
+@{
+    ViewBag.Title = "Danh sách sản phẩm";
+}
+<script>
+    (function(){
+        function parseNumber(s){
+            return parseInt((s||'').toString().replace(/[^0-9\-]/g,'')) || '';
+        }
+        function formatNumberInput(el){
+            var raw = el.value.replace(/,/g,'');
+            if(raw === '') return;
+            var n = parseInt(raw);
+            if(isNaN(n)) { el.value = ''; return; }
+            el.value = n.toLocaleString('en-US');
+        }
+
+        document.addEventListener('DOMContentLoaded', function(){
+            var min = document.getElementById('minPrice');
+            var max = document.getElementById('maxPrice');
+            [min,max].forEach(function(el){
+                if(!el) return;
+                el.addEventListener('input', function(){
+                    // remove any non-digit
+                    var raw = this.value.replace(/[^0-9]/g,'');
+                    if(raw === '') { this.value = ''; return; }
+                    var n = parseInt(raw);
+                    if(isNaN(n)) { this.value = ''; return; }
+                    this.value = n.toLocaleString('en-US');
+                    // move caret to end
+                    try { this.selectionStart = this.selectionEnd = this.value.length; } catch(e) {}
+                });
+                el.addEventListener('blur', function(){ formatNumberInput(this); });
+            });
+
+            // on submit, unformat numbers to plain digits
+            function stripPriceCommas(){
+                if(min && min.value) min.value = parseNumber(min.value).toString();
+                if(max && max.value) max.value = parseNumber(max.value).toString();
+                return true;
+            }
+            var form = document.getElementById('productFilters');
+            if(form){
+                form.addEventListener('submit', stripPriceCommas);
+            }
+        });
+    })();
+</script>
+
+<h2 class="section-heading">Danh sách sản phẩm</h2>
+
+<form id="productFilters" method="get" action="@Url.Action("List", "Product")" onsubmit="return stripPriceCommas();" class="card p-3 mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">Danh mục</label>
+            <select name="categoryId" class="form-select">
+                <option value="">Tất cả</option>
+                @foreach (var c in Model.Categories)
+                {
+                    <option value="@c.Id" @(Model.CategoryId == c.Id ? "selected" : "")>@c.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Giá từ</label>
+            <input type="text" id="minPrice" name="minPrice" class="form-control" value="@(Model.MinPrice.HasValue ? Model.MinPrice.Value.ToString("N0") : "")" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Giá đến</label>
+            <input type="text" id="maxPrice" name="maxPrice" class="form-control" value="@(Model.MaxPrice.HasValue ? Model.MaxPrice.Value.ToString("N0") : "")" />
+        </div>
+        <div class="col-md-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="onlyDiscounted" value="true" id="onlyDiscounted" @(Model.OnlyDiscounted ? "checked" : "") />
+                <label class="form-check-label" for="onlyDiscounted">Chỉ sản phẩm đang giảm giá</label>
+            </div>
+        </div>
+        <div class="col-md-2 text-end">
+            <button type="submit" class="btn btn-dark w-100">Lọc</button>
+        </div>
+    </div>
+</form>
+
+@if (Model.Products == null || !Model.Products.Any())
+{
+    <p class="text-muted">Không có sản phẩm phù hợp.</p>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var p in Model.Products)
+        {
+            var img = p.Images != null && p.Images.Any() ? p.Images.First().ImageUrl : null;
+            var finalPrice = p.IsDiscounted ? p.Price * (decimal)(1 - p.DiscountPercentage / 100.0) : p.Price;
+            <div class="col">
+                <div class="card product-card h-100">
+                    <div style="overflow:hidden;border-radius:12px 12px 0 0;position:relative;">
+                        @if (p.IsDiscounted)
+                        {
+                            <span class="badge bg-danger position-absolute top-0 start-0 m-2 px-2 py-1" style="z-index:1;border-radius:6px;">-@p.DiscountPercentage%</span>
+                        }
+                        @if (img != null)
+                        {
+                            <a href="@Url.Action("Details", "Product", new { sku = p.SKU })">
+                                <img src="@Url.Content("~/Content/images/products/" + p.SKU + "/" + img)" class="card-img-top" alt="@p.Name" style="height:220px;object-fit:cover;" />
+                            </a>
+                        }
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <p class="small text-muted mb-1">@(p.Category != null ? p.Category.Name : "")</p>
+                        <h6 class="card-title">
+                            <a href="@Url.Action("Details", "Product", new { sku = p.SKU })" class="text-decoration-none text-dark stretched-link">@p.Name</a>
+                        </h6>
+                        <div class="mt-auto pt-2">
+                            @if (p.IsDiscounted)
+                            {
+                                <div>
+                                    <span class="price-old">@p.Price.ToString("N0") ₫</span>
+                                    <span class="price-new ms-1">@finalPrice.ToString("N0") ₫</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="price-normal">@p.Price.ToString("N0") ₫</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
