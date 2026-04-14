@@ -6,7 +6,10 @@
 <main aria-labelledby="title">
     <h2 id="title">@ViewBag.Title</h2>
 
-    <p class="text-success">@ViewBag.StatusMessage</p>
+    @if (!string.IsNullOrEmpty(ViewBag.StatusMessage))
+    {
+        <div class="alert @(ViewBag.StatusClass ?? "alert-success")">@ViewBag.StatusMessage</div>
+    }
     <div>
         <h4>Thông tin tài khoản</h4>
         <hr />
@@ -30,50 +33,15 @@
                 </form>
             </div>
             <div class="col-md-6">
-                <h5>Liên kết & mật khẩu</h5>
+                <h5>Mật khẩu</h5>
                 <p>
                     @if (Model.HasPassword)
                     {
                         @Html.ActionLink("Đổi mật khẩu", "ChangePassword", null, new { @class = "btn btn-link" })
                     }
-                    else
-                    {
-                        @Html.ActionLink("Tạo mật khẩu", "SetPassword", null, new { @class = "btn btn-link" })
-                    }
                 </p>
-                <p>@Model.Logins.Count liên kết [@Html.ActionLink("Quản lý", "ManageLogins") ]</p>
             </div>
         </div>
-            @*
-                Phone Numbers can used as a second factor of verification in a two-factor authentication system.
-                
-                See <a href="https://go.microsoft.com/fwlink/?LinkId=403804">this article</a>
-                    for details on setting up this ASP.NET application to support two-factor authentication using SMS.
-                
-                Uncomment the following block after you have set up two-factor authentication
-            *@
-            @*  
-                <dt>Phone Number:</dt>
-                <dd>
-                    @(Model.PhoneNumber ?? "None")
-                    @if (Model.PhoneNumber != null)
-                    {
-                        <br />
-                        <text>[&nbsp;&nbsp;@Html.ActionLink("Change", "AddPhoneNumber")&nbsp;&nbsp;]</text>
-                        using (Html.BeginForm("RemovePhoneNumber", "Manage", FormMethod.Post, new { role = "form" }))
-                        {
-                            @Html.AntiForgeryToken()
-                            <text>[<input type="submit" value="Remove" class="btn-link" />]</text>
-                        }
-                    }
-                    else
-                    {
-                        <text>[&nbsp;&nbsp;@Html.ActionLink("Add", "AddPhoneNumber")
-                    }
-                </dd>
-            *@
-            <!-- Two-factor authentication removed from UI per request -->
-        </dl>
     </div>
 
     <hr />

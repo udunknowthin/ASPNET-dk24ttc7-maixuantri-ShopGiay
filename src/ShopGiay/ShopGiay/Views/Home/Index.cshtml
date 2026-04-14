@@ -58,15 +58,19 @@
         @foreach (var cat in Model.Categories)
         {
             <div class="col">
-                <div class="card category-card h-100 text-center">
+                <div class="card category-card h-100 text-center position-relative">
                     @if (!string.IsNullOrEmpty(cat.ImageUrl))
                     {
-                        <img src="@Url.Content("~/Content/images/categories/" + cat.ImageUrl)"
-                             class="card-img-top" alt="@cat.Name"
-                             style="height:140px;object-fit:cover;" />
+                        <a href="@Url.Action("List", "Product", new { categoryId = cat.Id })">
+                            <img src="@Url.Content("~/Content/images/categories/" + cat.ImageUrl)"
+                                 class="card-img-top" alt="@cat.Name"
+                                 style="height:140px;object-fit:cover;" />
+                        </a>
                     }
                     <div class="card-body py-2">
-                        <h6 class="card-title mb-0">@cat.Name</h6>
+                        <h6 class="card-title mb-0">
+                            <a href="@Url.Action("List", "Product", new { categoryId = cat.Id })" class="stretched-link text-decoration-none text-dark">@cat.Name</a>
+                        </h6>
                         <small class="text-muted">@(cat.Products != null ? cat.Products.Count : 0) sản phẩm</small>
                     </div>
                 </div>

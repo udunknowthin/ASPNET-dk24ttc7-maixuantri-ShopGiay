@@ -298,6 +298,11 @@ a { color: inherit; }
 /* Ẩn validation summary khi không có lỗi */
 .validation-summary-valid { display: none; }
 
+/* --- Change Password specific tweaks --- */
+.change-password-card { max-width: 560px; padding: 2.25rem; }
+.change-password-card .form-label { font-weight: 600; }
+.change-password-card .btn-dark { padding: .6rem 1rem; font-size: .98rem; }
+
 /* --- Footer --- */
 footer { color: #6c757d; font-size: .88rem; }
 
