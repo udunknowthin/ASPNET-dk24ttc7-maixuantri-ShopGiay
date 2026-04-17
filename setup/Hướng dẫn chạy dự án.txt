@@ -1,8 +1,10 @@
 1) Mở file .slnx từ git
 2) Chuột phải vào Solution trong Solution Explorer -> Restore NuGet Packages để lấy lại những gói cần thiết
-3) Chọn Tools trên cùng -> Nuget Package Manager -> Console
+3) Chọn Tools trên cùng -> Nuget Package Manager -> Package Manager Console
 4) Vào file web.config chỉnh lại connectionStrings về DB của máy
 5) Nhập Update-Database để Migrate đổ dữ liệu vào DB
-6) Mở Nuget Package Manager -> Console, chạy
+6) Ctrl + F5 để build và chạy project
+
+(Nếu có lỗi không build dược)
+7) Chọn Tools trên cùng -> Nuget Package Manager -> Package Manager Console
 Install-Package Microsoft.CodeDom.Providers.DotNetCompilerPlatform
-7) Ctrl + F5 để build và chạy project
