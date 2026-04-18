@@ -4,6 +4,8 @@ namespace ShopGiay.Migrations
     using System.Collections.Generic;
     using System.Data.Entity.Migrations;
     using System.Linq;
+    using Microsoft.AspNet.Identity;
+    using Microsoft.AspNet.Identity.EntityFramework;
     using ShopGiay.Models;
 
     internal sealed class Configuration : DbMigrationsConfiguration<ApplicationDbContext>
@@ -158,6 +160,35 @@ namespace ShopGiay.Migrations
             };
             sizes.ForEach(s => context.ProductSizes.AddOrUpdate(sz => sz.Id, s));
             context.SaveChanges();
+
+            // Seed Admin role and admin user
+            var roleManager = new RoleManager<IdentityRole>(new RoleStore<IdentityRole>(context));
+            var userManager = new UserManager<ApplicationUser>(new UserStore<ApplicationUser>(context));
+
+            if (!roleManager.RoleExists("Admin"))
+            {
+                roleManager.Create(new IdentityRole("Admin"));
+            }
+
+            var adminEmail = "admin@shopgiay.com";
+            var adminUser = userManager.FindByEmail(adminEmail);
+            if (adminUser == null)
+            {
+                adminUser = new ApplicationUser
+                {
+                    UserName = adminEmail,
+                    Email = adminEmail,
+                    FullName = "Administrator",
+                    Address = "ShopGiay HQ",
+                    EmailConfirmed = true
+                };
+                userManager.Create(adminUser, "Admin@123");
+            }
+
+            if (!userManager.IsInRole(adminUser.Id, "Admin"))
+            {
+                userManager.AddToRole(adminUser.Id, "Admin");
+            }
         }
     }
 }

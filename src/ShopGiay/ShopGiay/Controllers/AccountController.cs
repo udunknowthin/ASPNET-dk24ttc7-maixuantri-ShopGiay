@@ -86,6 +86,16 @@ namespace ShopGiay.Controllers
                         // Call CartController helper
                         var cartCtrl = new CartController();
                         cartCtrl.MergeSessionCartToUserCart(loggedUser.Id);
+
+                        // If user is admin and no specific return url, navigate to dashboard
+                        if (string.IsNullOrEmpty(returnUrl) || returnUrl == "/")
+                        {
+                            var roles = await UserManager.GetRolesAsync(loggedUser.Id);
+                            if (roles.Contains("Admin"))
+                            {
+                                return RedirectToAction("Index", "Admin");
+                            }
+                        }
                     }
                     return RedirectToLocal(returnUrl);
                 case SignInStatus.LockedOut:

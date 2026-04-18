@@ -1,0 +1,102 @@
+@model ShopGiay.Models.AdminDashboardViewModel
+@{
+    ViewBag.Title = "Admin Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">📊 Admin Dashboard</h2>
+    <div>
+        @Html.ActionLink("👥 Người dùng", "Users", "Admin", null, new { @class = "btn btn-outline-primary me-2" })
+        @Html.ActionLink("📦 Đơn hàng", "Orders", "Admin", null, new { @class = "btn btn-outline-success" })
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+            <div class="card-body">
+                <h5 class="text-muted">Tổng người dùng</h5>
+                <h2 class="fw-bold text-primary">@Model.TotalUsers</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+            <div class="card-body">
+                <h5 class="text-muted">Tổng đơn hàng</h5>
+                <h2 class="fw-bold text-success">@Model.TotalOrders</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+            <div class="card-body">
+                <h5 class="text-muted">Doanh thu</h5>
+                <h2 class="fw-bold text-warning">@Model.TotalRevenue.ToString("N0")₫</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm text-center">
+            <div class="card-body">
+                <h5 class="text-muted">Đơn chờ xử lý</h5>
+                <h2 class="fw-bold text-danger">@Model.PendingOrders</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white fw-bold">Đơn hàng gần đây</div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Khách hàng</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày tạo</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.RecentOrders != null && Model.RecentOrders.Count > 0)
+                {
+                    foreach (var o in Model.RecentOrders)
+                    {
+                        <tr>
+                            <td>@o.Id</td>
+                            <td>@o.FullName</td>
+                            <td>@o.TotalAmount.ToString("N0")₫</td>
+                            <td>
+                                @switch (o.Status)
+                                {
+                                    case ShopGiay.Models.OrderStatus.Pending:
+                                        <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                        break;
+                                    case ShopGiay.Models.OrderStatus.Processing:
+                                        <span class="badge bg-info text-dark">Đang xử lý</span>
+                                        break;
+                                    case ShopGiay.Models.OrderStatus.Shipped:
+                                        <span class="badge bg-primary">Đã giao vận chuyển</span>
+                                        break;
+                                    case ShopGiay.Models.OrderStatus.Delivered:
+                                        <span class="badge bg-success">Đã giao hàng</span>
+                                        break;
+                                    case ShopGiay.Models.OrderStatus.Cancelled:
+                                        <span class="badge bg-danger">Đã hủy</span>
+                                        break;
+                                }
+                            </td>
+                            <td>@o.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="5" class="text-center text-muted py-3">Chưa có đơn hàng nào.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -4,6 +4,12 @@
     using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "d-flex" }))
     {
         @Html.AntiForgeryToken()
+        if (User.IsInRole("Admin"))
+        {
+            <li class="nav-item">
+                @Html.ActionLink("⚙️ Admin", "Index", "Admin", routeValues: null, htmlAttributes: new { @class = "nav-link text-warning fw-semibold" })
+            </li>
+        }
         <li class="nav-item">
             @Html.ActionLink("👤 " + User.Identity.GetUserName(), "Index", "Manage", routeValues: null, htmlAttributes: new { title = "Quản lý tài khoản", @class = "nav-link" })
         </li>

@@ -1,0 +1,47 @@
+﻿@model ShopGiay.Models.AdminEditUserViewModel
+@{
+    ViewBag.Title = "Chỉnh sửa người dùng";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">✏️ Chỉnh sửa người dùng</h2>
+    @Html.ActionLink("← Quay lại danh sách", "Users", "Admin", null, new { @class = "btn btn-outline-secondary" })
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                @using (Html.BeginForm("EditUser", "Admin", FormMethod.Post, new { @class = "needs-validation" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.Id)
+
+                    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Email</label>
+                        <input type="text" class="form-control" value="@Model.Email" disabled />
+                    </div>
+
+                    <div class="mb-3">
+                        @Html.LabelFor(m => m.FullName, new { @class = "form-label fw-semibold" })
+                        @Html.TextBoxFor(m => m.FullName, new { @class = "form-control", placeholder = "Nhập họ và tên" })
+                    </div>
+
+                    <div class="mb-3">
+                        @Html.LabelFor(m => m.PhoneNumber, new { @class = "form-label fw-semibold" })
+                        @Html.TextBoxFor(m => m.PhoneNumber, new { @class = "form-control", placeholder = "Nhập số điện thoại" })
+                    </div>
+
+                    <div class="mb-3">
+                        @Html.LabelFor(m => m.Address, new { @class = "form-label fw-semibold" })
+                        @Html.TextBoxFor(m => m.Address, new { @class = "form-control", placeholder = "Nhập địa chỉ" })
+                    </div>
+
+                    <button type="submit" class="btn btn-primary px-4">💾 Lưu thay đổi</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
