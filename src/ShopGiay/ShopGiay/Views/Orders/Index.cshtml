@@ -1,26 +1,58 @@
-@model IEnumerable<ShopGiay.Models.Order>
+@model ShopGiay.Models.UserOrdersViewModel
 @{
     ViewBag.Title = "Đơn hàng của tôi";
+    ViewBag.PaginationPage = Model.Page;
+    ViewBag.PaginationTotalPages = Model.TotalPages;
+    ViewBag.PaginationAction = "Index";
+    ViewBag.PaginationController = "Orders";
+    ViewBag.PaginationRouteValues = new System.Collections.Generic.Dictionary<string, object>();
 }
 
-<h2>@ViewBag.Title</h2>
+<h2 class="section-heading">📋 Đơn hàng của tôi</h2>
 
-@if (!Model.Any())
+@if (Model.Orders == null || !Model.Orders.Any())
 {
-    <p class="text-muted">Bạn chưa có đơn hàng nào.</p>
+    <div class="text-center py-5">
+        <div style="font-size:3rem">📦</div>
+        <p class="text-muted mt-2">Bạn chưa có đơn hàng nào.</p>
+        @Html.ActionLink("Mua sắm ngay", "List", "Product", null, new { @class = "btn btn-dark mt-2" })
+    </div>
 }
 else
 {
-    <div class="list-group">
-        @foreach (var o in Model)
+    <div class="d-flex justify-content-between align-items-center mb-3 small text-muted">
+        <span>Tổng: <strong>@Model.TotalCount</strong> đơn — Trang <strong>@Model.Page</strong>/@Model.TotalPages</span>
+    </div>
+
+    <div class="d-flex flex-column gap-3">
+        @foreach (var o in Model.Orders)
         {
-            <a class="list-group-item list-group-item-action" href="@Url.Action("Details", "Orders", new { id = o.Id })">
-                <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">#@o.Id</h5>
-                    <small>@o.CreatedAt.ToString("g")</small>
+            <div class="card border-0 shadow-sm order-card">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                        <div>
+                            <h6 class="fw-bold mb-1">Đơn hàng #@o.Id</h6>
+                            <div class="small text-muted">@o.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                        </div>
+                        <div class="text-end">
+                            @Html.Partial("_OrderStatusBadge", o.Status)
+                            <div class="fw-bold mt-1">@o.TotalAmount.ToString("N0")₫</div>
+                        </div>
+                    </div>
+                    <hr class="my-2" />
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <div class="small text-muted">
+                            <span>📍 @o.Address</span>
+                        </div>
+                        <a href="@Url.Action("Details", "Orders", new { id = o.Id })" class="btn btn-sm btn-outline-dark">
+                            Chi tiết →
+                        </a>
+                    </div>
                 </div>
-                <p class="mb-1">Tổng: @string.Format("{0:N0} ₫", o.TotalAmount) — Trạng thái: @o.Status</p>
-            </a>
+            </div>
         }
     </div>
+
+    @Html.Partial("_Pagination")
 }
+

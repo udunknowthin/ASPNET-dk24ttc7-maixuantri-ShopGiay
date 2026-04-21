@@ -1,0 +1,19 @@
+@model ShopGiay.Models.OrderStatus
+@switch (Model)
+{
+    case ShopGiay.Models.OrderStatus.Pending:
+        <span class="badge bg-warning text-dark">Chờ xử lý</span>
+        break;
+    case ShopGiay.Models.OrderStatus.Processing:
+        <span class="badge bg-info text-dark">Đang xử lý</span>
+        break;
+    case ShopGiay.Models.OrderStatus.Shipped:
+        <span class="badge bg-primary">Vận chuyển</span>
+        break;
+    case ShopGiay.Models.OrderStatus.Delivered:
+        <span class="badge bg-success">Đã giao</span>
+        break;
+    case ShopGiay.Models.OrderStatus.Cancelled:
+        <span class="badge bg-danger">Đã hủy</span>
+        break;
+}

@@ -1,0 +1,63 @@
+@model ShopGiay.Models.AdminEditCategoryViewModel
+@{
+    bool isNew = Model.Id == 0;
+    ViewBag.Title = isNew ? "Thêm danh mục mới" : "Chỉnh sửa danh mục";
+    string formAction = isNew ? "CreateCategory" : "EditCategory";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <h2 class="fw-bold mb-0">@(isNew ? "➕ Thêm danh mục" : "✏️ Chỉnh sửa danh mục")</h2>
+    @Html.ActionLink("← Danh sách danh mục", "Categories", "Admin", null, new { @class = "btn btn-outline-secondary btn-sm" })
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                @using (Html.BeginForm(formAction, "Admin", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.Id)
+                    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            @Html.LabelFor(m => m.Name, new { @class = "form-label fw-semibold" })
+                            @Html.TextBoxFor(m => m.Name, new { @class = "form-control", placeholder = "Tên danh mục" })
+                            @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger small" })
+                        </div>
+
+                        <div class="col-12">
+                            @Html.LabelFor(m => m.Description, new { @class = "form-label fw-semibold" })
+                            @Html.TextAreaFor(m => m.Description, 3, 0, new { @class = "form-control", placeholder = "Mô tả danh mục..." })
+                        </div>
+
+                        @if (!isNew && !string.IsNullOrWhiteSpace(Model.CurrentImageUrl))
+                        {
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Hình ảnh hiện tại</label>
+                                <div>
+                                    <img src="~/Content/images/categories/@Model.CurrentImageUrl" style="height:120px;object-fit:cover;" class="img-thumbnail" />
+                                </div>
+                            </div>
+                        }
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">@(isNew ? "Hình ảnh" : "Thay ảnh mới")</label>
+                            <input type="file" name="categoryImage" accept="image/*" class="form-control" />
+                            @if (!isNew)
+                            {
+                                <small class="text-muted">Để trống nếu không muốn thay ảnh.</small>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary px-4">💾 @(isNew ? "Thêm danh mục" : "Lưu thay đổi")</button>
+                        @Html.ActionLink("Hủy", "Categories", "Admin", null, new { @class = "btn btn-outline-secondary" })
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

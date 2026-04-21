@@ -312,3 +312,95 @@ footer { color: #6c757d; font-size: .88rem; }
 ::-webkit-scrollbar-thumb { background: #bbb; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #888; }
 
+/* =========================================
+   ADMIN DASHBOARD
+   ========================================= */
+
+.stat-card .stat-icon { font-size: 1.8rem; line-height: 1; margin-bottom: .25rem; }
+.stat-card .stat-value { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+.stat-card .stat-label { font-size: .78rem; color: #6c757d; margin-top: .2rem; }
+
+.admin-table th { font-size: .82rem; white-space: nowrap; }
+.admin-table td { font-size: .88rem; vertical-align: middle; }
+
+.chart-container    { position: relative; height: 280px; }
+.chart-container-sm { position: relative; height: 200px; width: 200px; max-width: 100%; }
+
+/* Đơn hàng user */
+.order-card { transition: box-shadow .2s; }
+.order-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.1) !important; }
+
+/* =========================================
+   PAGINATION
+   ========================================= */
+.pagination .page-link {
+    border-radius: 8px !important;
+    font-size: .88rem;
+    padding: .35rem .65rem;
+    color: #212529;
+    border-color: #dee2e6;
+}
+.pagination .page-item.active .page-link {
+    background-color: #212529;
+    border-color: #212529;
+    color: #fff;
+}
+.pagination .page-link:hover { background-color: #f8f9fa; }
+
+/* =========================================
+   RESPONSIVE — MOBILE (max 576px)
+   ========================================= */
+@media (max-width: 575.98px) {
+    /* Navbar */
+    .navbar-brand { font-size: 1.1rem; }
+    .navbar .nav-link { font-size: .9rem; padding: .3rem .5rem; }
+
+    /* Hero carousel */
+    .home-carousel .carousel-item { height: 260px; }
+    .home-carousel .carousel-caption h2 { font-size: 1.4rem; }
+    .home-carousel .carousel-caption p { font-size: .88rem; }
+
+    /* Section heading */
+    .section-heading { font-size: 1.2rem; }
+
+    /* Product cards */
+    .product-card .card-img-top { height: 180px !important; }
+    .product-card .card-title { font-size: .85rem; }
+
+    /* Cart table — stack on mobile */
+    .cart-table thead { display: none; }
+    .cart-table tbody tr {
+        display: flex;
+        flex-wrap: wrap;
+        border-bottom: 1px solid #dee2e6;
+        padding: .5rem 0;
+    }
+    .cart-table td { border: none; }
+
+    /* Checkout */
+    .checkout-card { padding: 1rem !important; }
+
+    /* Auth */
+    .auth-card { margin: 20px auto; padding: 1.25rem; }
+
+    /* Admin stat cards */
+    .stat-card .stat-value { font-size: 1.15rem; }
+    .stat-card .stat-icon  { font-size: 1.4rem; }
+
+    /* Charts */
+    .chart-container    { height: 220px; }
+    .chart-container-sm { height: 160px; width: 160px; }
+
+    /* Admin action buttons */
+    .d-flex.gap-2 > .btn { font-size: .8rem; padding: .3rem .6rem; }
+}
+
+/* =========================================
+   RESPONSIVE — TABLET (576–991px)
+   ========================================= */
+@media (min-width: 576px) and (max-width: 991.98px) {
+    .home-carousel .carousel-item { height: 340px; }
+    .stat-card .stat-value { font-size: 1.3rem; }
+    .chart-container { height: 250px; }
+}
+

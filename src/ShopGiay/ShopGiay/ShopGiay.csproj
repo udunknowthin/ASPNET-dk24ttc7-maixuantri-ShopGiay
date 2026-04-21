@@ -252,6 +252,8 @@
     <Content Include="Views\Manage\Index.cshtml" />
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
+    <Content Include="Views\Shared\_Pagination.cshtml" />
+    <Content Include="Views\Shared\_OrderStatusBadge.cshtml" />
     <Content Include="Views\Product\Details.cshtml" />
     <Content Include="Views\Cart\Detail.cshtml" />
     <Content Include="Views\Checkout\Confirm.cshtml" />
@@ -264,6 +266,10 @@
     <Content Include="Views\Admin\Dashboard\Users.cshtml" />
     <Content Include="Views\Admin\Dashboard\EditUser.cshtml" />
     <Content Include="Views\Admin\Dashboard\Orders.cshtml" />
+    <Content Include="Views\Admin\Dashboard\Products.cshtml" />
+    <Content Include="Views\Admin\Dashboard\EditProduct.cshtml" />
+    <Content Include="Views\Admin\Dashboard\Categories.cshtml" />
+    <Content Include="Views\Admin\Dashboard\EditCategory.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

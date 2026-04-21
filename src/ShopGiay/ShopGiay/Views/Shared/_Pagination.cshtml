@@ -1,0 +1,47 @@
+@* 
+    Required ViewBag params:
+    - PaginationPage (int)
+    - PaginationTotalPages (int)
+    - PaginationRouteValues (object) - route values excluding 'page'
+    - PaginationAction (string)
+    - PaginationController (string)
+*@
+@{
+    int currentPage = (int)(ViewBag.PaginationPage ?? 1);
+    int totalPages = (int)(ViewBag.PaginationTotalPages ?? 1);
+    string action = (string)ViewBag.PaginationAction;
+    string controller = (string)ViewBag.PaginationController;
+    var baseRouteValues = ViewBag.PaginationRouteValues as System.Collections.Generic.Dictionary<string, object>
+                          ?? new System.Collections.Generic.Dictionary<string, object>();
+
+    if (totalPages <= 1) { return; }
+
+    Func<int, System.Web.Routing.RouteValueDictionary> makeRoute = (p) => {
+        var rv = new System.Web.Routing.RouteValueDictionary(baseRouteValues);
+        rv["page"] = p;
+        return rv;
+    };
+}
+<nav class="mt-4" aria-label="Phân trang">
+    <ul class="pagination justify-content-center flex-wrap gap-1 mb-0">
+        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action(action, controller, makeRoute(currentPage - 1))">‹</a>
+        </li>
+        @for (int i = 1; i <= totalPages; i++)
+        {
+            if (i == 1 || i == totalPages || (i >= currentPage - 2 && i <= currentPage + 2))
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    <a class="page-link" href="@Url.Action(action, controller, makeRoute(i))">@i</a>
+                </li>
+            }
+            else if (i == currentPage - 3 || i == currentPage + 3)
+            {
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+            }
+        }
+        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+            <a class="page-link" href="@Url.Action(action, controller, makeRoute(currentPage + 1))">›</a>
+        </li>
+    </ul>
+</nav>

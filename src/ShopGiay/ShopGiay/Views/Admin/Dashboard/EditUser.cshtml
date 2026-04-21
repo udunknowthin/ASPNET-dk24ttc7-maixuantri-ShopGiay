@@ -39,9 +39,29 @@
                         @Html.TextBoxFor(m => m.Address, new { @class = "form-control", placeholder = "Nhập địa chỉ" })
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Quyền hạn</label>
+                        <div class="form-check">
+                            @if (Model.IsCurrentUser)
+                            {
+                                <input type="checkbox" class="form-check-input" disabled @(Model.IsAdmin ? "checked" : "") />
+                            }
+                            else
+                            {
+                                @Html.CheckBoxFor(m => m.IsAdmin, new { @class = "form-check-input" })
+                            }
+                            <label class="form-check-label" for="IsAdmin">Quyền Admin</label>
+                        </div>
+                        @if (Model.IsCurrentUser)
+                        {
+                            <small class="text-warning">⚠️ Không thể thay đổi quyền của tài khoản đang đăng nhập.</small>
+                        }
+                    </div>
+
                     <button type="submit" class="btn btn-primary px-4">💾 Lưu thay đổi</button>
                 }
             </div>
         </div>
     </div>
 </div>
+

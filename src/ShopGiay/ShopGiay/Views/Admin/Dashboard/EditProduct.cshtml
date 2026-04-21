@@ -1,0 +1,144 @@
+@model ShopGiay.Models.AdminEditProductViewModel
+@{
+    bool isNew = Model.Id == 0;
+    ViewBag.Title = isNew ? "Thêm sản phẩm mới" : "Chỉnh sửa sản phẩm";
+    string formAction = isNew ? "CreateProduct" : "EditProduct";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <h2 class="fw-bold mb-0">@(isNew ? "➕ Thêm sản phẩm" : "✏️ Chỉnh sửa sản phẩm")</h2>
+    @Html.ActionLink("← Danh sách sản phẩm", "Products", "Admin", null, new { @class = "btn btn-outline-secondary btn-sm" })
+</div>
+
+@if (!isNew && Model.ExistingImages != null && Model.ExistingImages.Count > 0)
+{
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <label class="form-label fw-semibold">Ảnh hiện tại</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var img in Model.ExistingImages)
+                        {
+                            <div class="text-center" style="width:110px;">
+                                <img src="~/Content/images/products/@Model.SKU/@img.ImageUrl" class="img-thumbnail" style="width:100px;height:100px;object-fit:cover;" />
+                                @using (Html.BeginForm("DeleteProductImage", "Admin", FormMethod.Post, new { @class = "mt-1" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="imageId" value="@img.Id" />
+                                    <input type="hidden" name="productId" value="@Model.Id" />
+                                    <button type="submit" class="btn btn-danger btn-sm w-100" onclick="return confirm('Xóa ảnh này?');">🗑</button>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                @using (Html.BeginForm(formAction, "Admin", FormMethod.Post, new { enctype = "multipart/form-data", novalidate = "novalidate" }))
+                {
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.Id)
+                    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            @Html.LabelFor(m => m.SKU, new { @class = "form-label fw-semibold" })
+                            @if (isNew)
+                            {
+                                @Html.TextBoxFor(m => m.SKU, new { @class = "form-control", placeholder = "VD: MEN-001" })
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(m => m.SKU, new { @class = "form-control", @readonly = "readonly" })
+                            }
+                            @Html.ValidationMessageFor(m => m.SKU, "", new { @class = "text-danger small" })
+                        </div>
+                        <div class="col-md-8">
+                            @Html.LabelFor(m => m.Name, new { @class = "form-label fw-semibold" })
+                            @Html.TextBoxFor(m => m.Name, new { @class = "form-control", placeholder = "Tên sản phẩm" })
+                            @Html.ValidationMessageFor(m => m.Name, "", new { @class = "text-danger small" })
+                        </div>
+                        <div class="col-md-4">
+                            @Html.LabelFor(m => m.CategoryId, new { @class = "form-label fw-semibold" })
+                            @Html.DropDownListFor(m => m.CategoryId, Model.CategoryOptions, "-- Chọn danh mục --", new { @class = "form-select" })
+                            @Html.ValidationMessageFor(m => m.CategoryId, "", new { @class = "text-danger small" })
+                        </div>
+                        <div class="col-md-4">
+                            @Html.LabelFor(m => m.Price, new { @class = "form-label fw-semibold" })
+                            @Html.TextBoxFor(m => m.Price, new { @class = "form-control", placeholder = "0", type = "number", min = "0", step = "any" })
+                            @Html.ValidationMessageFor(m => m.Price, "", new { @class = "text-danger small" })
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Giảm giá</label>
+                            <div class="d-flex align-items-center gap-2 mt-1">
+                                <div class="form-check">
+                                    @Html.CheckBoxFor(m => m.IsDiscounted, new { @class = "form-check-input", id = "isDiscounted", onchange = "toggleDiscount()" })
+                                    <label class="form-check-label" for="isDiscounted">Đang giảm</label>
+                                </div>
+                                <div id="discountField" style="@(Model.IsDiscounted ? "" : "display:none;") flex:1;">
+                                    @Html.TextBoxFor(m => m.DiscountPercentage, new { @class = "form-control form-control-sm", placeholder = "%", type = "number", min = "0", max = "100", step = "1" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            @Html.LabelFor(m => m.Description, new { @class = "form-label fw-semibold" })
+                            @Html.TextAreaFor(m => m.Description, 2, 0, new { @class = "form-control", placeholder = "Mô tả ngắn hiển thị trong danh sách..." })
+                        </div>
+                        <div class="col-12">
+                            @Html.LabelFor(m => m.LongDescription, new { @class = "form-label fw-semibold" })
+                            @Html.TextAreaFor(m => m.LongDescription, 4, 0, new { @class = "form-control", placeholder = "Mô tả chi tiết trên trang sản phẩm..." })
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">@(isNew ? "Hình ảnh sản phẩm (tối thiểu 3 ảnh)" : "Thêm ảnh mới")</label>
+                            <input type="file" name="uploadedImages" multiple accept="image/*" class="form-control" @(isNew ? "required" : "") />
+                            @if (isNew)
+                            {
+                                <small class="text-muted">Chọn ít nhất 3 hình ảnh. Ảnh sẽ lưu vào thư mục theo SKU.</small>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary px-4">💾 @(isNew ? "Thêm sản phẩm" : "Lưu thay đổi")</button>
+                        @Html.ActionLink("Hủy", "Products", "Admin", null, new { @class = "btn btn-outline-secondary" })
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+        function toggleDiscount() {
+            var cb = document.getElementById('isDiscounted');
+            var field = document.getElementById('discountField');
+            field.style.display = cb.checked ? 'flex' : 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var imgInput = document.querySelector('[name="uploadedImages"]');
+            if (imgInput) {
+                imgInput.addEventListener('change', function () {
+                    var max = 10 * 1024 * 1024;
+                    var bad = [];
+                    for (var i = 0; i < this.files.length; i++) {
+                        if (this.files[i].size > max) bad.push(this.files[i].name);
+                    }
+                    if (bad.length) {
+                        alert('⚠️ Các ảnh sau vượt quá 10 MB và sẽ bị backend từ chối:\n' + bad.join('\n'));
+                    }
+                });
+            }
+        });
+    </script>
+}
