@@ -7,6 +7,7 @@
     ViewBag.PaginationController = "Product";
     ViewBag.PaginationRouteValues = new System.Collections.Generic.Dictionary<string, object>
     {
+        { "keyword",        Model.SearchKeyword },
         { "categoryId",     Model.CategoryId.HasValue  ? (object)Model.CategoryId.Value  : null },
         { "minPrice",       Model.MinPrice.HasValue     ? (object)Model.MinPrice.Value    : null },
         { "maxPrice",       Model.MaxPrice.HasValue     ? (object)Model.MaxPrice.Value    : null },
@@ -62,6 +63,10 @@
 
 <form id="productFilters" method="get" action="@Url.Action("List", "Product")" onsubmit="return stripPriceCommas();" class="card p-3 mb-4">
     <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">Tên sản phẩm</label>
+            <input type="text" name="keyword" value="@Model.SearchKeyword" class="form-control" placeholder="Tìm theo tên hoặc mã SKU..." />
+        </div>
         <div class="col-md-3">
             <label class="form-label">Danh mục</label>
             <select name="categoryId" class="form-select">
@@ -80,13 +85,13 @@
             <label class="form-label">Giá đến</label>
             <input type="text" id="maxPrice" name="maxPrice" class="form-control" value="@(Model.MaxPrice.HasValue ? Model.MaxPrice.Value.ToString("N0") : "")" />
         </div>
-        <div class="col-md-3">
-            <div class="form-check">
+        <div class="col-md-2 d-flex align-items-end">
+            <div class="form-check mb-1">
                 <input class="form-check-input" type="checkbox" name="onlyDiscounted" value="true" id="onlyDiscounted" @(Model.OnlyDiscounted ? "checked" : "") />
-                <label class="form-check-label" for="onlyDiscounted">Chỉ sản phẩm đang giảm giá</label>
+                <label class="form-check-label" for="onlyDiscounted">Đang giảm giá</label>
             </div>
         </div>
-        <div class="col-md-2 text-end">
+        <div class="col-md-1 text-end">
             <button type="submit" class="btn btn-dark w-100">Lọc</button>
         </div>
     </div>

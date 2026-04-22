@@ -56,7 +56,7 @@
                         <h5 class="mb-1">#@o.Id</h5>
                         <small>@o.CreatedAt.ToString("g")</small>
                     </div>
-                    <p class="mb-1">Tổng: @string.Format("{0:N0} ₫", o.TotalAmount) — Trạng thái: @o.Status</p>
+                    <p class="mb-1">Tổng: @string.Format("{0:N0} ₫", o.TotalAmount) — Trạng thái: @Html.Partial("_OrderStatusBadge", o.Status)</p>
                 </a>
             }
         </div>

@@ -179,8 +179,7 @@ namespace ShopGiay.Migrations
                     UserName = adminEmail,
                     Email = adminEmail,
                     FullName = "Administrator",
-                    Address = "ShopGiay HQ",
-                    EmailConfirmed = true
+                    Address = "ShopGiay HQ"
                 };
                 userManager.Create(adminUser, "Admin@123");
             }

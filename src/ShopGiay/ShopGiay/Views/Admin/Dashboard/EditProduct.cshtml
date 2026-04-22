@@ -46,7 +46,6 @@
                 {
                     @Html.AntiForgeryToken()
                     @Html.HiddenFor(m => m.Id)
-                    @Html.ValidationSummary(true, "", new { @class = "alert alert-danger" })
 
                     <div class="row g-3">
                         <div class="col-md-4">
@@ -104,6 +103,30 @@
                             {
                                 <small class="text-muted">Chọn ít nhất 3 hình ảnh. Ảnh sẽ lưu vào thư mục theo SKU.</small>
                             }
+                            @Html.ValidationMessage("IMAGE", "", new { @class = "text-danger small" })
+                        </div>
+
+                        <!-- Sizes -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Size & Số lượng tồn kho</label>
+                            @Html.ValidationMessage("SIZE", "", new { @class = "text-danger small d-block mb-2" })
+                            <div id="sizeList">
+                                @if (Model.Sizes != null && Model.Sizes.Any())
+                                {
+                                    for (int i = 0; i < Model.Sizes.Count; i++)
+                                    {
+                                        <div class="d-flex gap-2 align-items-center mb-2 size-row">
+                                            <input type="hidden" name="Sizes[@i].Id" value="@Model.Sizes[i].Id" />
+                                            <input type="text" name="Sizes[@i].SizeName" value="@Model.Sizes[i].SizeName"
+                                                   class="form-control" style="max-width:120px;" placeholder="VD: 39, 40, XL" />
+                                            <input type="number" name="Sizes[@i].StockQuantity" value="@Model.Sizes[i].StockQuantity"
+                                                   class="form-control" style="max-width:120px;" placeholder="Tồn kho" min="0" />
+                                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeSize(this)">✕</button>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            <button type="button" class="btn btn-outline-secondary btn-sm mt-1" onclick="addSize()">+ Thêm size</button>
                         </div>
                     </div>
 
@@ -119,12 +142,41 @@
 
 @section scripts {
     <script>
+        // ── Discount toggle ──────────────────────────────────────────
         function toggleDiscount() {
             var cb = document.getElementById('isDiscounted');
             var field = document.getElementById('discountField');
             field.style.display = cb.checked ? 'flex' : 'none';
         }
 
+        // ── Size rows ────────────────────────────────────────────────
+        function getSizeIndex() {
+            return document.querySelectorAll('#sizeList .size-row').length;
+        }
+
+        function addSize() {
+            var idx = getSizeIndex();
+            var row = document.createElement('div');
+            row.className = 'd-flex gap-2 align-items-center mb-2 size-row';
+            row.innerHTML =
+                '<input type="hidden" name="Sizes[' + idx + '].Id" value="0" />' +
+                '<input type="text"   name="Sizes[' + idx + '].SizeName"      class="form-control" style="max-width:120px;" placeholder="VD: 39, 40, XL" />' +
+                '<input type="number" name="Sizes[' + idx + '].StockQuantity" class="form-control" style="max-width:120px;" placeholder="Tồn kho" min="0" value="0" />' +
+                '<button type="button" class="btn btn-outline-danger btn-sm" onclick="removeSize(this)">✕</button>';
+            document.getElementById('sizeList').appendChild(row);
+        }
+
+        function removeSize(btn) {
+            btn.closest('.size-row').remove();
+            // Đánh lại index sau khi xóa để MVC binding đúng
+            document.querySelectorAll('#sizeList .size-row').forEach(function(row, i) {
+                row.querySelectorAll('input').forEach(function(inp) {
+                    inp.name = inp.name.replace(/Sizes\[\d+\]/, 'Sizes[' + i + ']');
+                });
+            });
+        }
+
+        // ── Image size validation ────────────────────────────────────
         document.addEventListener('DOMContentLoaded', function () {
             var imgInput = document.querySelector('[name="uploadedImages"]');
             if (imgInput) {
@@ -135,7 +187,7 @@
                         if (this.files[i].size > max) bad.push(this.files[i].name);
                     }
                     if (bad.length) {
-                        alert('⚠️ Các ảnh sau vượt quá 10 MB và sẽ bị backend từ chối:\n' + bad.join('\n'));
+                        alert('⚠️ Các ảnh sau vượt quá 10 MB và bị từ chối:\n' + bad.join('\n'));
                     }
                 });
             }

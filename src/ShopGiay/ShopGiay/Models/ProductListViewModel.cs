@@ -8,6 +8,7 @@ namespace ShopGiay.Models
         public List<Product> Products { get; set; }
         public List<Category> Categories { get; set; }
 
+        public string SearchKeyword { get; set; }
         public int? CategoryId { get; set; }
         public decimal? MinPrice { get; set; }
         public decimal? MaxPrice { get; set; }

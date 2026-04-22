@@ -138,8 +138,15 @@ namespace ShopGiay.Controllers
                 db.CartItems.Add(cartItem);
             }
 
-            db.SaveChanges();
-            TempData["Success"] = "Đã thêm sản phẩm vào giỏ hàng!";
+            try
+            {
+                db.SaveChanges();
+                TempData["Success"] = "Đã thêm sản phẩm vào giỏ hàng!";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Không thể thêm vào giỏ hàng: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+            }
             return RedirectToAction("Details", "Product", new { sku = product.SKU });
         }
 
@@ -194,7 +201,14 @@ namespace ShopGiay.Controllers
             if (cartItem != null)
             {
                 db.CartItems.Remove(cartItem);
-                db.SaveChanges();
+                try
+                {
+                    db.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    TempData["Error"] = "Không thể xóa sản phẩm khỏi giỏ hàng: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+                }
             }
 
             return RedirectToAction("Detail");
@@ -250,8 +264,15 @@ namespace ShopGiay.Controllers
 
             cartItem.Quantity = quantity;
             cartItem.UpdatedAt = DateTime.Now;
-            db.SaveChanges();
-            return Json(new { success = true, message = "Đã cập nhật giỏ hàng!" });
+            try
+            {
+                db.SaveChanges();
+                return Json(new { success = true, message = "Đã cập nhật giỏ hàng!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Không thể cập nhật: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message) });
+            }
         }
 
         #region Session Cart Helpers

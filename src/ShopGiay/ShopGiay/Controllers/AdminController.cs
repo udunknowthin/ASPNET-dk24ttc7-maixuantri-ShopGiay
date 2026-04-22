@@ -220,8 +220,15 @@ namespace ShopGiay.Controllers
 
             order.Status = status;
             order.UpdatedAt = DateTime.Now;
-            db.SaveChanges();
-            TempData["Success"] = "Cập nhật trạng thái đơn hàng #" + orderId + " thành công.";
+            try
+            {
+                db.SaveChanges();
+                TempData["Success"] = "Cập nhật trạng thái đơn hàng #" + orderId + " thành công.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Không thể cập nhật trạng thái: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+            }
             return RedirectToAction("Orders", new { keyword, fromDate, toDate, status = statusFilter, page });
         }
 
@@ -256,7 +263,10 @@ namespace ShopGiay.Controllers
 
         public ActionResult EditProduct(int id)
         {
-            var product = db.Products.Include(p => p.Images).FirstOrDefault(p => p.Id == id);
+            var product = db.Products
+                .Include(p => p.Images)
+                .Include(p => p.Sizes)
+                .FirstOrDefault(p => p.Id == id);
             if (product == null) return HttpNotFound();
 
             var model = new AdminEditProductViewModel
@@ -271,6 +281,12 @@ namespace ShopGiay.Controllers
                 DiscountPercentage = product.DiscountPercentage,
                 CategoryId = product.CategoryId,
                 ExistingImages = product.Images.ToList(),
+                Sizes = product.Sizes.Select(s => new ProductSizeInputModel
+                {
+                    Id = s.Id,
+                    SizeName = s.SizeName,
+                    StockQuantity = s.StockQuantity
+                }).ToList(),
                 CategoryOptions = db.Categories.OrderBy(c => c.Name)
                     .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name })
                     .ToList()
@@ -285,9 +301,16 @@ namespace ShopGiay.Controllers
             if (!IsValidWindowsFolderName(model.SKU))
                 ModelState.AddModelError("SKU", "SKU không được chứa các ký tự: \\ / : * ? \" < > |");
 
+            // Lọc size hợp lệ (có tên)
+            var validSizes = (model.Sizes ?? new List<ProductSizeInputModel>())
+                .Where(s => !string.IsNullOrWhiteSpace(s.SizeName)).ToList();
+            if (!validSizes.Any())
+                ModelState.AddModelError("SIZE", "Vui lòng thêm ít nhất một size cho sản phẩm.");
+
             if (!ModelState.IsValid)
             {
                 model.ExistingImages = db.ProductImages.Where(i => i.ProductId == model.Id).ToList();
+                model.Sizes = model.Sizes ?? new List<ProductSizeInputModel>();
                 model.CategoryOptions = db.Categories.OrderBy(c => c.Name)
                     .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name })
                     .ToList();
@@ -315,13 +338,72 @@ namespace ShopGiay.Controllers
             product.DiscountPercentage = model.IsDiscounted ? model.DiscountPercentage : 0;
             product.CategoryId = model.CategoryId;
             product.UpdatedAt = DateTime.Now;
-            db.SaveChanges();
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                model.ExistingImages = db.ProductImages.Where(i => i.ProductId == model.Id).ToList();
+                model.Sizes = db.ProductSizes.Where(s => s.ProductId == model.Id)
+                    .Select(s => new ProductSizeInputModel { Id = s.Id, SizeName = s.SizeName, StockQuantity = s.StockQuantity }).ToList();
+                model.CategoryOptions = db.Categories.OrderBy(c => c.Name)
+                    .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name }).ToList();
+                ModelState.AddModelError("", "Lỗi khi lưu sản phẩm: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message));
+                return View("~/Views/Admin/Dashboard/EditProduct.cshtml", model);
+            }
 
             var newFiles = GetValidUploadedFiles("uploadedImages");
             if (newFiles.Count > 0)
                 SaveProductImages(product.Id, product.SKU, newFiles);
 
-            TempData["Success"] = "Cập nhật sản phẩm \"" + product.Name + "\" thành công.";
+            // Lưu sizes: xóa size không còn trong danh sách, thêm/cập nhật các size còn lại
+            var validSizesEdit = (model.Sizes ?? new List<ProductSizeInputModel>())
+                .Where(s => !string.IsNullOrWhiteSpace(s.SizeName)).ToList();
+            var submittedIds = validSizesEdit.Where(s => s.Id > 0).Select(s => s.Id).ToList();
+            var existingSizes = db.ProductSizes.Where(s => s.ProductId == product.Id).ToList();
+
+            // Xóa CartItems tham chiếu đến size bị xóa trước, rồi mới xóa size
+            var sizesToDelete = existingSizes.Where(es => !submittedIds.Contains(es.Id)).ToList();
+            foreach (var es in sizesToDelete)
+            {
+                var orphanedCarts = db.CartItems.Where(ci => ci.ProductSizeId == es.Id).ToList();
+                db.CartItems.RemoveRange(orphanedCarts);
+                db.ProductSizes.Remove(es);
+            }
+
+            foreach (var sInput in validSizesEdit)
+            {
+                if (sInput.Id > 0)
+                {
+                    var existing = existingSizes.FirstOrDefault(es => es.Id == sInput.Id);
+                    if (existing != null)
+                    {
+                        existing.SizeName = sInput.SizeName.Trim();
+                        existing.StockQuantity = sInput.StockQuantity;
+                        existing.UpdatedAt = DateTime.Now;
+                    }
+                }
+                else
+                {
+                    db.ProductSizes.Add(new ProductSize
+                    {
+                        ProductId = product.Id,
+                        SizeName = sInput.SizeName.Trim(),
+                        StockQuantity = sInput.StockQuantity,
+                        CreatedAt = DateTime.Now
+                    });
+                }
+            }
+            try
+            {
+                db.SaveChanges();
+                TempData["Success"] = "Cập nhật sản phẩm \"" + product.Name + "\" thành công.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Lỗi khi lưu size sản phẩm: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+            }
             return RedirectToAction("Products");
         }
 
@@ -342,13 +424,21 @@ namespace ShopGiay.Controllers
         {
             if (!IsValidWindowsFolderName(model.SKU))
                 ModelState.AddModelError("SKU", "SKU không được chứa các ký tự: \\ / : * ? \" < > |");
+            else if (db.Products.Any(p => p.SKU == model.SKU))
+                ModelState.AddModelError("SKU", "SKU \"" + model.SKU + "\" đã tồn tại. Vui lòng chọn SKU khác.");
 
             var newFiles = GetValidUploadedFiles("uploadedImages");
             if (newFiles.Count < 3)
-                ModelState.AddModelError("", "Vui lòng tải lên ít nhất 3 hình ảnh cho sản phẩm mới.");
+                ModelState.AddModelError("IMAGE", "Vui lòng tải lên ít nhất 3 hình ảnh cho sản phẩm mới.");
+
+            var validSizesCreate = (model.Sizes ?? new List<ProductSizeInputModel>())
+                .Where(s => !string.IsNullOrWhiteSpace(s.SizeName)).ToList();
+            if (!validSizesCreate.Any())
+                ModelState.AddModelError("SIZE", "Vui lòng thêm ít nhất một size cho sản phẩm.");
 
             if (!ModelState.IsValid)
             {
+                model.Sizes = model.Sizes ?? new List<ProductSizeInputModel>();
                 model.CategoryOptions = db.Categories.OrderBy(c => c.Name)
                     .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name })
                     .ToList();
@@ -368,7 +458,39 @@ namespace ShopGiay.Controllers
                 CreatedAt = DateTime.Now
             };
             db.Products.Add(product);
-            db.SaveChanges();
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                model.Sizes = model.Sizes ?? new List<ProductSizeInputModel>();
+                model.CategoryOptions = db.Categories.OrderBy(c => c.Name)
+                    .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name }).ToList();
+                ModelState.AddModelError("", "Lỗi khi thêm sản phẩm: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message));
+                return View("~/Views/Admin/Dashboard/EditProduct.cshtml", model);
+            }
+
+            // Lưu sizes
+            foreach (var sInput in validSizesCreate)
+            {
+                db.ProductSizes.Add(new ProductSize
+                {
+                    ProductId = product.Id,
+                    SizeName = sInput.SizeName.Trim(),
+                    StockQuantity = sInput.StockQuantity,
+                    CreatedAt = DateTime.Now
+                });
+            }
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Lỗi khi lưu size sản phẩm: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+                return RedirectToAction("Products");
+            }
 
             SaveProductImages(product.Id, product.SKU, newFiles);
 
@@ -391,7 +513,14 @@ namespace ShopGiay.Controllers
                         System.IO.File.Delete(filePath);
                 }
                 db.ProductImages.Remove(image);
-                db.SaveChanges();
+                try
+                {
+                    db.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    TempData["Error"] = "Không thể xóa ảnh: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+                }
             }
             return RedirectToAction("EditProduct", new { id = productId });
         }
@@ -400,8 +529,14 @@ namespace ShopGiay.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteProduct(int id)
         {
-            var product = db.Products.Include(p => p.Images).FirstOrDefault(p => p.Id == id);
+            var product = db.Products.Include(p => p.Images).Include(p => p.Sizes).FirstOrDefault(p => p.Id == id);
             if (product == null) return HttpNotFound();
+
+            // Xóa CartItems tham chiếu đến size của sản phẩm này trước khi xóa
+            var sizeIds = product.Sizes.Select(s => s.Id).ToList();
+            var cartItemsToRemove = db.CartItems.Where(ci => sizeIds.Contains(ci.ProductSizeId)).ToList();
+            if (cartItemsToRemove.Any())
+                db.CartItems.RemoveRange(cartItemsToRemove);
 
             string folderPath = Server.MapPath("~/Content/images/products/" + product.SKU + "/");
             if (Directory.Exists(folderPath))
@@ -409,8 +544,15 @@ namespace ShopGiay.Controllers
 
             var name = product.Name;
             db.Products.Remove(product);
-            db.SaveChanges();
-            TempData["Success"] = "Đã xóa sản phẩm \"" + name + "\".";
+            try
+            {
+                db.SaveChanges();
+                TempData["Success"] = "Đã xóa sản phẩm \"" + name + "\".";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Không thể xóa sản phẩm: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+            }
             return RedirectToAction("Products");
         }
 
@@ -483,8 +625,15 @@ namespace ShopGiay.Controllers
             if (categoryImage != null && categoryImage.ContentLength > 0)
                 category.ImageUrl = SaveCategoryImage(categoryImage);
 
-            db.SaveChanges();
-            TempData["Success"] = "Cập nhật danh mục \"" + category.Name + "\" thành công.";
+            try
+            {
+                db.SaveChanges();
+                TempData["Success"] = "Cập nhật danh mục \"" + category.Name + "\" thành công.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Lỗi khi cập nhật danh mục: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+            }
             return RedirectToAction("Categories");
         }
 
@@ -514,8 +663,15 @@ namespace ShopGiay.Controllers
                 category.ImageUrl = SaveCategoryImage(categoryImage);
 
             db.Categories.Add(category);
-            db.SaveChanges();
-            TempData["Success"] = "Thêm danh mục \"" + category.Name + "\" thành công.";
+            try
+            {
+                db.SaveChanges();
+                TempData["Success"] = "Thêm danh mục \"" + category.Name + "\" thành công.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Lỗi khi thêm danh mục: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+            }
             return RedirectToAction("Categories");
         }
 
@@ -541,8 +697,15 @@ namespace ShopGiay.Controllers
 
             var name = category.Name;
             db.Categories.Remove(category);
-            db.SaveChanges();
-            TempData["Success"] = "Đã xóa danh mục \"" + name + "\".";
+            try
+            {
+                db.SaveChanges();
+                TempData["Success"] = "Đã xóa danh mục \"" + name + "\".";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Không thể xóa danh mục: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+            }
             return RedirectToAction("Categories");
         }
 

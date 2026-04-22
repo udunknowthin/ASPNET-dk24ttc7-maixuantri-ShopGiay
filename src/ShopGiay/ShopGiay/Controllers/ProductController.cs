@@ -11,12 +11,15 @@ namespace ShopGiay.Controllers
         private const int PageSize = 12;
         private ApplicationDbContext db = new ApplicationDbContext();
 
-        public ActionResult List(int? categoryId, decimal? minPrice, decimal? maxPrice, bool? onlyDiscounted, int page = 1)
+        public ActionResult List(string keyword, int? categoryId, decimal? minPrice, decimal? maxPrice, bool? onlyDiscounted, int page = 1)
         {
             var query = db.Products
                 .Include(p => p.Images)
                 .Include(p => p.Category)
                 .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+                query = query.Where(p => p.Name.Contains(keyword) || p.SKU.Contains(keyword));
 
             if (categoryId.HasValue)
                 query = query.Where(p => p.CategoryId == categoryId.Value);
@@ -40,6 +43,7 @@ namespace ShopGiay.Controllers
             {
                 Products = products,
                 Categories = db.Categories.OrderBy(c => c.Name).ToList(),
+                SearchKeyword = keyword,
                 CategoryId = categoryId,
                 MinPrice = minPrice,
                 MaxPrice = maxPrice,

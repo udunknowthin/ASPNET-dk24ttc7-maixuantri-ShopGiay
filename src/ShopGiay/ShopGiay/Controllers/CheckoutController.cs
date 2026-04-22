@@ -189,10 +189,17 @@ namespace ShopGiay.Controllers
                 db.CartItems.RemoveRange(cart.CartItems);
             }
 
-            db.SaveChanges();
-
-            TempData["Success"] = string.Format("Đặt hàng thành công! Mã đơn hàng của bạn là #{0}.", order.Id);
-            return RedirectToAction("Success", new { id = order.Id });
+            try
+            {
+                db.SaveChanges();
+                TempData["Success"] = string.Format("Đặt hàng thành công! Mã đơn hàng của bạn là #{0}.", order.Id);
+                return RedirectToAction("Success", new { id = order.Id });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Đặt hàng thất bại: " + (ex.InnerException != null ? ex.InnerException.Message : ex.Message);
+                return RedirectToAction("Confirm");
+            }
         }
 
         public ActionResult Success(int id)

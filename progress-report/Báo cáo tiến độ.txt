@@ -1,0 +1,9 @@
+- Khởi tạo dự án
+- Cập nhật giao diện và css
+- Làm một số màn hình product list, giỏ hang
+- Chỉnh lại hướng dẫn build project khi lấy src từ GitHub
+- Làm Admin dashboard
+- Thêm logic phân trang
+- Chỉnh sửa admin dashboard
+- Try catch cho một số lỗi trong DB
+- Tìm kiếm theo Keyword ở màn hình product/list

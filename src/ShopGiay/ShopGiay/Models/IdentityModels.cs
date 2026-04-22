@@ -46,6 +46,15 @@ namespace ShopGiay.Models
         {
             base.OnModelCreating(modelBuilder);
 
+            // Xóa các cột Identity không sử dụng
+            modelBuilder.Entity<ApplicationUser>()
+                .Ignore(u => u.PhoneNumberConfirmed)
+                .Ignore(u => u.TwoFactorEnabled)
+                .Ignore(u => u.LockoutEndDateUtc)
+                .Ignore(u => u.LockoutEnabled)
+                .Ignore(u => u.AccessFailedCount)
+                .Ignore(u => u.EmailConfirmed);
+
             modelBuilder.Entity<Cart>()
                 .HasRequired(c => c.User)
                 .WithMany()

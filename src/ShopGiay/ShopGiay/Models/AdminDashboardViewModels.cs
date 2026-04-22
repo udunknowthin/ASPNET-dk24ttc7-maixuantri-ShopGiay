@@ -94,6 +94,13 @@ namespace ShopGiay.Models
         public int TotalPages { get { return (int)Math.Ceiling((double)TotalCount / PageSize); } }
     }
 
+    public class ProductSizeInputModel
+    {
+        public int Id { get; set; } // 0 = mới, > 0 = đã tồn tại
+        public string SizeName { get; set; }
+        public int StockQuantity { get; set; }
+    }
+
     public class AdminEditProductViewModel
     {
         public int Id { get; set; }
@@ -120,7 +127,7 @@ namespace ShopGiay.Models
         public bool IsDiscounted { get; set; }
 
         [Display(Name = "% Giảm giá")]
-        [Range(0, 100)]
+        [Range(0, 100, ErrorMessage = "Phần trăm giảm giá phải từ 0 đến 100.")]
         public double DiscountPercentage { get; set; }
 
         [Required(ErrorMessage = "Vui lòng chọn danh mục")]
@@ -128,8 +135,8 @@ namespace ShopGiay.Models
         public int CategoryId { get; set; }
 
         public List<SelectListItem> CategoryOptions { get; set; }
-
         public List<ProductImage> ExistingImages { get; set; }
+        public List<ProductSizeInputModel> Sizes { get; set; } = new List<ProductSizeInputModel>();
     }
 
     public class AdminCategoryListViewModel
