@@ -1,11 +1,38 @@
-1) Mở file .slnx từ git
+1) Mở file .slnx trong folder `./src/ShopGiay` từ git repo
 2) Chuột phải vào Solution trong Solution Explorer -> Restore NuGet Packages để lấy lại những gói cần thiết
 3) Chọn Tools trên cùng -> Nuget Package Manager -> Package Manager Console
-4) Vào file web.config chỉnh lại connectionStrings về DB của máy
-5) Tạo cơ sở Dữ liệu
+4) Tạo cơ sở Dữ liệu, chọn 1 trong 2 cách:
+   - Trường hợp 1: Dùng SQL Server Express (SQLEXPRESS)
+     + Mở SSMS và kết nối tới SQLEXPRESS
+     + Chạy lệnh:
+       CREATE DATABASE ShopGiay;
+       GO
+   - Trường hợp 2: Dùng LocalDB (mặc định của Visual Studio)
+     + Mở SQL Server Object Explorer (View -> SQL Server Object Explorer)
+     + Kết nối tới (localdb)\MSSQLLocalDB
+     + Chuột phải Databases -> Add New Database -> nhập ShopGiay
+5) Vào file web.config ở thư mục `./src/ShopGiay` chỉnh lại connectionStrings về DB của máy
+  <connectionStrings>
+    <add name="DefaultConnection" connectionString="Data Source=.\SQLEXPRESS;Initial Catalog=<Tên DB vừa tạo>;Integrated Security=True;MultipleActiveResultSets=True" providerName="System.Data.SqlClient" />
+  </connectionStrings>
+
+Ví dụ DB vừa tạo trên là ShopGiay:
+
+- Trường hợp 1, sử dụng SQLEXPRESS:
+  <connectionStrings>
+    <add name="DefaultConnection" connectionString="Data Source=.\SQLEXPRESS;Initial Catalog=ShopGiay;Integrated Security=True;MultipleActiveResultSets=True" providerName="System.Data.SqlClient" />
+  </connectionStrings>
+- Trường hợp 2, dung LocalDB của Visual Studio:
+  <connectionStrings>
+  <add name="DefaultConnection"
+       connectionString="Data Source=(LocalDB)\MSSQLLocalDB;Initial Catalog=ShopGiay;Integrated Security=True;MultipleActiveResultSets=True"
+       providerName="System.Data.SqlClient" />
+  </connectionStrings>
+
 6) Nhập Update-Database để Migrate tạo bảng và đổ dữ liệu vào DB
-7) Ctrl + F5 để build và chạy project
+7) Chuột phải vào Solution trong Solution Explorer -> Clean Solution -> Rebuild Solution
+8) Ctrl + F5 để chạy dự án ở môi trường Local
 
 (Nếu có lỗi không build dược)
-8) Chọn Tools trên cùng -> Nuget Package Manager -> Package Manager Console
+9) Chọn Tools trên cùng -> Nuget Package Manager -> Package Manager Console
 Install-Package Microsoft.CodeDom.Providers.DotNetCompilerPlatform
