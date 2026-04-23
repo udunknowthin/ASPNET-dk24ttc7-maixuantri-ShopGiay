@@ -165,7 +165,7 @@ namespace ShopGiay.Controllers
                         SizeName = ci.ProductSize != null ? ci.ProductSize.SizeName : string.Empty,
                         UnitPrice = price,
                         Quantity = ci.Quantity,
-                        ProductImageUrl = ci.Product != null && ci.Product.Images != null && ci.Product.Images.Any() ? ci.Product.Images.First().ImageUrl : null,
+                        ProductImageUrl = ci.Product != null && ci.Product.Images != null && ci.Product.Images.Any() ? "/Content/images/products/" + ci.Product.SKU + "/" + ci.Product.Images.First().ImageUrl : null,
                         CreatedAt = DateTime.Now
                     };
                 }).ToList()

@@ -7,3 +7,5 @@
 - Chỉnh sửa admin dashboard
 - Try catch cho một số lỗi trong DB
 - Tìm kiếm theo Keyword ở màn hình product/list
+- Thêm phân trang và chỉnh sửa admin Dashboard
+- Chỉnh lại CSS cho message báo lỗi ở màn hình đăng ký, đăng nhập

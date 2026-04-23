@@ -2,7 +2,7 @@
 2) Chuột phải vào Solution trong Solution Explorer -> Restore NuGet Packages để lấy lại những gói cần thiết
 3) Chọn Tools trên cùng -> Nuget Package Manager -> Package Manager Console
 4) Vào file web.config chỉnh lại connectionStrings về DB của máy
-5) Nhập Update-Database để Migrate đổ dữ liệu vào DB
+5) Nhập Update-Database để Migrate tạo bảng và đổ dữ liệu vào DB
 6) Ctrl + F5 để build và chạy project
 
 (Nếu có lỗi không build dược)
