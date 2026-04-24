@@ -386,12 +386,24 @@ namespace ShopGiay.Controllers
                 var size = db.ProductSizes.Find(si.ProductSizeId);
                 if (product == null || size == null) continue;
 
+                var unitPrice = si.UnitPriceAtAdd;
+                var discount = si.DiscountPercentageAtAdd;
+                if (unitPrice <= 0)
+                {
+                    unitPrice = product.IsDiscounted
+                        ? product.Price * (decimal)(1 - product.DiscountPercentage / 100.0)
+                        : product.Price;
+                    discount = product.IsDiscounted ? (double?)product.DiscountPercentage : null;
+                }
+
                 db.CartItems.Add(new CartItem
                 {
                     CartId = cart.Id,
                     ProductId = si.ProductId,
                     ProductSizeId = si.ProductSizeId,
                     Quantity = si.Quantity,
+                    UnitPriceAtAdd = unitPrice,
+                    DiscountPercentageAtAdd = discount,
                     CreatedAt = DateTime.Now
                 });
             }
