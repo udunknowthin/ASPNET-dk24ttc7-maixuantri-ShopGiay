@@ -1,8 +1,8 @@
 1. Framework: .NET Framework 4.7.2
 2. IDE: Visual Studio Community 2022/2026 (Đảm bảo đã cài đặt thành phần **NuGet Package Manager**).
    - [Tải Visual Studio](https://visualstudio.microsoft.com/downloads/)
-3. Database: 
-   - SQL Express: Hệ quản trị cơ sở dữ liệu nhẹ cho môi trường học tập.
+3. Database: (Tùy chọn, nếu dung LocalDB mặc định của Visual Studio thì không cần cài)
+   - SQL Express: Hệ quản trị cơ sở dữ liệu nhẹ cho môi trường học tập. 
    	[Tải SQL Server Express](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)
    - SQL Server Management Studio (SSMS): Công cụ quản lý và truy vấn giao diện DB.
    	[Tải SSMS](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms)

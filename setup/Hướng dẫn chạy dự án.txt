@@ -1,7 +1,6 @@
 1) Mở file .slnx trong folder `./src/ShopGiay` từ git repo
 2) Chuột phải vào Solution trong Solution Explorer -> Restore NuGet Packages để lấy lại những gói cần thiết
-3) Chọn Tools trên cùng -> Nuget Package Manager -> Package Manager Console
-4) Tạo cơ sở Dữ liệu, chọn 1 trong 2 cách:
+3) Tạo cơ sở Dữ liệu, chọn 1 trong 2 cách:
    - Trường hợp 1: Dùng SQL Server Express (SQLEXPRESS)
      + Mở SSMS và kết nối tới SQLEXPRESS
      + Chạy lệnh:
@@ -11,7 +10,7 @@
      + Mở SQL Server Object Explorer (View -> SQL Server Object Explorer)
      + Kết nối tới (localdb)\MSSQLLocalDB
      + Chuột phải Databases -> Add New Database -> nhập ShopGiay
-5) Vào file web.config ở thư mục `./src/ShopGiay` chỉnh lại connectionStrings về DB của máy
+4) Vào file web.config ở thư mục `./src/ShopGiay` chỉnh lại connectionStrings về DB của máy
   <connectionStrings>
     <add name="DefaultConnection" connectionString="Data Source=.\SQLEXPRESS;Initial Catalog=<Tên DB vừa tạo>;Integrated Security=True;MultipleActiveResultSets=True" providerName="System.Data.SqlClient" />
   </connectionStrings>
@@ -29,7 +28,8 @@ Ví dụ DB vừa tạo trên là ShopGiay:
        providerName="System.Data.SqlClient" />
   </connectionStrings>
 
-6) Nhập Update-Database để Migrate tạo bảng và đổ dữ liệu vào DB
+5) Chọn Tools trên cùng -> Nuget Package Manager -> Package Manager Console
+6) Tại Package Manager Console, nhập Update-Database để Migrate tạo bảng và đổ dữ liệu vào DB
 7) Chuột phải vào Solution trong Solution Explorer -> Clean Solution -> Rebuild Solution
 8) Ctrl + F5 để chạy dự án ở môi trường Local
 

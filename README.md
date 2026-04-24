@@ -14,7 +14,7 @@ Dự án Website bán giày được xây dựng trên nền tảng ASP.NET. Tà
 1. **Framework:** .NET Framework 4.7.2
 2. **IDE:** Visual Studio Community 2022/2026 (Đảm bảo đã cài đặt thành phần **NuGet Package Manager**).
    - [Tải Visual Studio](https://visualstudio.microsoft.com/downloads/)
-3. **Database:** 
+3. **Database:** (Tùy chọn, nếu muốn dùng LocalDB mặc định của Visual Studio ở bước 3 thì không cần cài SQL Express và SSMS)
    - **SQL Express:** Hệ quản trị cơ sở dữ liệu nhẹ cho môi trường học tập.
      - [Tải SQL Server Express](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)
    - **SQL Server Management Studio (SSMS):** Công cụ quản lý và truy vấn giao diện DB.
@@ -29,10 +29,7 @@ Mở file có đuôi `.slnx` nằm trong folder `./src/ShopGiay` trực tiếp b
 ### Bước 2: Phục hồi các gói thư viện (NuGet)
 Trong cửa sổ **Solution Explorer**, nhấp chuột phải vào **Solution** (dòng trên cùng) và chọn **Restore NuGet Packages**.
 
-### Bước 3: Mở bảng điều khiển quản lý gói
-Trên thanh menu, chọn `Tools` -> `NuGet Package Manager` -> `Package Manager Console`.
-
-### Bước 4: Tạo cơ sở dữ liệu (Database)
+### Bước 3: Tạo cơ sở dữ liệu (Database)
 Chọn **1 trong 2 cách** sau tùy môi trường bạn sử dụng:
 
 **Trường hợp 1: Dùng SQL Server Express (SQLEXPRESS)**
@@ -54,8 +51,7 @@ GO
   - Chuột phải vào **Databases** → chọn **Add New Database**
   - Đặt tên database là **ShopGiay** → nhấn **OK**
 
-
-### Bước 5: Cấu hình Connection String
+### Bước 4: Cấu hình Connection String
 Mở file `web.config` tại thư mục `./src/ShopGiay`. Chỉnh sửa thẻ `<connectionStrings>` khớp với máy của bạn:
 ```xml
 <connectionStrings>
@@ -80,6 +76,9 @@ Ví dụ DB vừa tạo trên là ShopGiay:
        providerName="System.Data.SqlClient" />
 </connectionStrings>
 ```
+
+### Bước 5: Mở bảng điều khiển quản lý gói
+Trên thanh menu, chọn `Tools` -> `NuGet Package Manager` -> `Package Manager Console`.
 
 ### Bước 6: Khởi tạo dữ liệu (Migration)
 Tại cửa sổ **Package Manager Console**, nhập lệnh sau và nhấn Enter:
