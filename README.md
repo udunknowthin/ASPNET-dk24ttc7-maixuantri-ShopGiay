@@ -90,7 +90,15 @@ Update-Database
 Nhấp chuột phải vào **Solution** -> chọn **Clean Solution**. Sau đó nhấp chuột phải lần nữa -> chọn **Rebuild Solution**.
 
 ### Bước 8: Chạy dự án
-Nhấn tổ hợp phím `Ctrl + F5` để chạy dự án trên trình duyệt.
+- Nhấn tổ hợp phím `Ctrl + F5` để chạy dự án trên trình duyệt.
+- Lần đầu chạy, Visual Studio sẽ yêu cầu tạo và tin cậy (trust) chứng chỉ SSL cho HTTPS.
+- Chọn Yes để hệ thống tự động tạo chứng chỉ cho IIS Express.
+- Nếu trình duyệt cảnh báo bảo mật:
+  - Trên Google Chrome, Microsoft Edge:
+    Khi hiện trang “Your connection is not private” -> Nhấn Advanced (Nâng cao) -> Chọn Proceed to localhost (unsafe) để tiếp tục
+  - Trên Mozilla Firefox:
+    Nhấn Advanced (Nâng cao) -> Chọn Accept the Risk and Continue để truy cập
+- Sau khi hoàn tất, ứng dụng sẽ chạy với địa chỉ dạng https://localhost:xxxx
 
 ---
 
