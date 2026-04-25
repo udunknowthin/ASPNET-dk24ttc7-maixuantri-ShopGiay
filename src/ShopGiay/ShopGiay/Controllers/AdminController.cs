@@ -21,6 +21,8 @@ namespace ShopGiay.Controllers
         private const int ProductPageSize = 12;
         private const int CategoryPageSize = 12;
         private const long MaxImageBytes = 10L * 1024 * 1024; // 10 MB
+        private static readonly HashSet<string> AllowedImageExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif" };
 
         private static readonly Regex InvalidFolderCharsRegex = new Regex(@"[\\/:*?""<>|\x00]");
 
@@ -606,8 +608,14 @@ namespace ShopGiay.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult EditCategory(AdminEditCategoryViewModel model, HttpPostedFileBase categoryImage)
         {
-            if (categoryImage != null && categoryImage.ContentLength > MaxImageBytes)
-                ModelState.AddModelError("", "Ảnh vượt quá 10 MB, vui lòng chọn ảnh nhỏ hơn.");
+            if (categoryImage != null && categoryImage.ContentLength > 0)
+            {
+                string catExt = Path.GetExtension(categoryImage.FileName);
+                if (!AllowedImageExtensions.Contains(catExt))
+                    ModelState.AddModelError("", "Ảnh không hợp lệ. Chỉ chấp nhận: jpg, jpeg, png, gif, webp, avif.");
+                else if (categoryImage.ContentLength > MaxImageBytes)
+                    ModelState.AddModelError("", "Ảnh vượt quá 10 MB, vui lòng chọn ảnh nhỏ hơn.");
+            }
 
             if (!ModelState.IsValid)
             {
@@ -646,8 +654,14 @@ namespace ShopGiay.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult CreateCategory(AdminEditCategoryViewModel model, HttpPostedFileBase categoryImage)
         {
-            if (categoryImage != null && categoryImage.ContentLength > MaxImageBytes)
-                ModelState.AddModelError("", "Ảnh vượt quá 10 MB, vui lòng chọn ảnh nhỏ hơn.");
+            if (categoryImage != null && categoryImage.ContentLength > 0)
+            {
+                string catExt = Path.GetExtension(categoryImage.FileName);
+                if (!AllowedImageExtensions.Contains(catExt))
+                    ModelState.AddModelError("", "Ảnh không hợp lệ. Chỉ chấp nhận: jpg, jpeg, png, gif, webp, avif.");
+                else if (categoryImage.ContentLength > MaxImageBytes)
+                    ModelState.AddModelError("", "Ảnh vượt quá 10 MB, vui lòng chọn ảnh nhỏ hơn.");
+            }
 
             if (!ModelState.IsValid)
                 return View("~/Views/Admin/Dashboard/EditCategory.cshtml", model);
@@ -735,7 +749,10 @@ namespace ShopGiay.Controllers
                     var f = Request.Files[i];
                     if (f != null && f.ContentLength > 0)
                     {
-                        if (f.ContentLength > MaxImageBytes)
+                        string fExt = Path.GetExtension(f.FileName);
+                        if (!AllowedImageExtensions.Contains(fExt))
+                            ModelState.AddModelError("", $"Ảnh \"{Path.GetFileName(f.FileName)}\" không hợp lệ. Chỉ chấp nhận: jpg, jpeg, png, gif, webp, avif.");
+                        else if (f.ContentLength > MaxImageBytes)
                             ModelState.AddModelError("", $"Ảnh \"{Path.GetFileName(f.FileName)}\" vượt quá 10 MB, vui lòng chọn ảnh nhỏ hơn.");
                         else
                             result.Add(f);

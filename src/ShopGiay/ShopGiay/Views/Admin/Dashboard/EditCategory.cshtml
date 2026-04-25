@@ -44,7 +44,7 @@
 
                         <div class="col-12">
                             <label class="form-label fw-semibold">@(isNew ? "Hình ảnh" : "Thay ảnh mới")</label>
-                            <input type="file" name="categoryImage" accept="image/*" class="form-control" />
+                            <input type="file" name="categoryImage" accept="image/jpeg,image/png,image/gif,image/webp,image/avif,.jpg,.jpeg,.png,.gif,.webp,.avif" class="form-control" />
                             @if (!isNew)
                             {
                                 <small class="text-muted">Để trống nếu không muốn thay ảnh.</small>

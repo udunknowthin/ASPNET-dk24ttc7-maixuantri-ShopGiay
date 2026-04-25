@@ -98,7 +98,7 @@
 
                         <div class="col-12">
                             <label class="form-label fw-semibold">@(isNew ? "Hình ảnh sản phẩm (tối thiểu 3 ảnh)" : "Thêm ảnh mới")</label>
-                            <input type="file" name="uploadedImages" multiple accept="image/*" class="form-control" @(isNew ? "required" : "") />
+                            <input type="file" name="uploadedImages" multiple accept="image/jpeg,image/png,image/gif,image/webp,image/avif,.jpg,.jpeg,.png,.gif,.webp,.avif" class="form-control" @(isNew ? "required" : "") />
                             @if (isNew)
                             {
                                 <small class="text-muted">Chọn ít nhất 3 hình ảnh. Ảnh sẽ lưu vào thư mục theo SKU.</small>
@@ -182,13 +182,18 @@
             if (imgInput) {
                 imgInput.addEventListener('change', function () {
                     var max = 10 * 1024 * 1024;
-                    var bad = [];
+                    var allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'];
+                    var tooLarge = [], badExt = [];
                     for (var i = 0; i < this.files.length; i++) {
-                        if (this.files[i].size > max) bad.push(this.files[i].name);
+                        var f = this.files[i];
+                        var ext = f.name.split('.').pop().toLowerCase();
+                        if (allowedExts.indexOf(ext) === -1) badExt.push(f.name);
+                        else if (f.size > max) tooLarge.push(f.name);
                     }
-                    if (bad.length) {
-                        alert('⚠️ Các ảnh sau vượt quá 10 MB và bị từ chối:\n' + bad.join('\n'));
-                    }
+                    if (badExt.length)
+                        alert('⚠️ Định dạng không hợp lệ (chỉ chấp nhận jpg, jpeg, png, gif, webp, avif):\n' + badExt.join('\n'));
+                    if (tooLarge.length)
+                        alert('⚠️ Các ảnh sau vượt quá 10 MB và bị từ chối:\n' + tooLarge.join('\n'));
                 });
             }
         });
