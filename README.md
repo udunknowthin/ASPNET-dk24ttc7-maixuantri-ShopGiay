@@ -100,11 +100,18 @@ Nhấp chuột phải vào **Solution** -> chọn **Clean Solution**. Sau đó n
     Nhấn Advanced (Nâng cao) -> Chọn Accept the Risk and Continue để truy cập
 - Sau khi hoàn tất, ứng dụng sẽ chạy với địa chỉ dạng https://localhost:xxxx
 
+### Bước 9:
+- Tại bước 6, DB sẽ tạo một tài khoản admin mặc định, dùng tài khoản này đăng nhập theo luồng thông thường để vào màn hình Dashboard của Admin
+```
+admin@shopgiay.com
+Admin@123
+```
+
 ---
 
 ## 🛠 Khắc phục sự cố (Troubleshooting)
 
-**Bước 9: Nếu gặp lỗi không build được dự án**
+**Bước 10: Nếu gặp lỗi không build được dự án**
 Mở **Package Manager Console** và chạy lệnh sau để cài đặt bổ sung trình biên dịch:
 ```powershell
 Install-Package Microsoft.CodeDom.Providers.DotNetCompilerPlatform
